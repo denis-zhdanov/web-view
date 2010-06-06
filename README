@@ -1,0 +1,3 @@
+This application provides support for convenient representation of target documents to
+web-friendly format. For example we may want to view source file with the same syntax
+highlighting as the one used at your favorite IDE.
