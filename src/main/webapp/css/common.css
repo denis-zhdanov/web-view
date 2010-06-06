@@ -1,0 +1,83 @@
+#menu {
+    float: left;
+    width: 90%;
+    background: #f4f4f4;
+    font-size: 93%;
+    line-height: normal;
+    border-bottom: 1px solid #ddd;
+    margin-left: 5%;
+}
+
+#menu ul {
+    margin: 0;
+    padding: 10px 10px 0 50px;
+    list-style: none;
+}
+
+#menu li {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+#menu a {
+    float: left;
+    background: url("../pic/menu-left.gif") no-repeat left top;
+    margin: 0;
+    padding: 0 0 0 4px;
+    text-decoration: none;
+    position: relative;
+    top: 1px;
+    /*border: 1px solid #ddd;*/
+    border-bottom: 1px solid #ddd;
+}
+
+#menu li.active a {
+    border-bottom-color: #f4f4f4;
+}
+
+#menu a span {
+    float: left;
+    display: block;
+    background: url("../pic/menu-right.gif") no-repeat right top;
+    padding: 5px 15px 4px 6px;
+    color: #666;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac \*/
+#menu a span {
+    float: none;
+}
+
+/* End IE5-Mac hack */
+#menu a:hover span {
+    color: #000;
+}
+
+#menu a:hover {
+    background-position: 0 -42px;
+}
+
+#menu a:hover span {
+    background-position: 100% -42px;
+}
+
+#content {
+    float: none;
+    padding: 3%;
+    margin: 0 5% 0 5%;
+    border: 1px solid #ddd;
+    height:100%;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    height: 97%;
+}
+
+body, html {
+   background: #f4f4f4;
+}

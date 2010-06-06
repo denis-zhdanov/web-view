@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="/css/common.css"/>
+        <title></title>
+    </head>
+    <body>
+        <div id="menu">
+            <ul>
+                #set($tabs = {"go": "Go!", "doc": "Documentation", "feedback": "Feedback", "about": "About"})
+                #foreach ($entry in $tabs.entrySet())
+                    #set($active = $entry.key.equals($content))
+                    <li #if ($active) class="active"#end>
+                        <a href="/content/${entry.key}.html" title="$entry.value"><span>$entry.value</span></a>
+                    </li>
+                #end
+            </ul>
+        </div>
+        <div id="content">
+            #set ($contentToIncludePah = "content/" + $content + ".vm")
+            #include($contentToIncludePah)
+        </div>
+    </body>
+</html>
