@@ -1,3 +1,14 @@
 Actual transformation startup content.
 <br/>
-<b>To be done<b>
+<b>To be done</b>
+<div id="source-options">
+    <ul>
+        <li id="ide-style">
+            <ul>
+                <li id="idea"></li>
+            </ul>
+        </li>
+        <li></li>
+        <li></li>
+    </ul>
+</div>
