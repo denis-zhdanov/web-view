@@ -1,14 +1,29 @@
-Actual transformation startup content.
-<br/>
-<b>To be done</b>
-<div id="source-options">
-    <ul>
-        <li id="ide-style">
-            <ul>
-                <li id="idea"></li>
-            </ul>
-        </li>
-        <li></li>
-        <li></li>
-    </ul>
-</div>
+#set($options = [
+    {"paramName": "ide", "values": ["idea", "eclipse", "netbeans"], "defaultValue": "idea"}
+])
+
+<form action="/syntax/highlight.html" method="post">
+    <div id="source-options">
+        #foreach($optionData in $options)
+            <div class="horizontal-option-wrapper">
+                <input type="hidden" name="${optionData.paramName}"/>
+                <div class="horizontal-option-current">
+                    <img src="/pic/${optionData.defaultValue}.png" alt="idea"/>
+                    <img src="/pic/arrow-right.png" onclick="onOptionArrowClick(this);"/>
+
+                </div>
+                <div class="all-options-wrapper">
+                    <div class="horizontal-option-all">
+                        #foreach($option in $optionData.values)
+                            <img src="/pic/${option}.png" alt="$option" onclick="onOptionClick(this);"/>
+                        #end
+                    </div>
+                </div>
+            </div>
+        #end
+    </div>
+    <div id="target-source-wrapper">
+        <textarea id="target-source" name="source"></textarea>
+    </div>
+</form>
+
