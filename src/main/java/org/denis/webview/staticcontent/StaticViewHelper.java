@@ -1,5 +1,7 @@
-package org.denis.webview.content;
+package org.denis.webview.staticcontent;
 
+import org.denis.webview.view.CommonViewHelper;
+import org.denis.webview.view.ViewType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,33 +13,25 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Utility class that encapsulates the logic of mapping view name from incoming request to
- * Spring MVC view to use.
- * <p/>
- * Thread-safe.
- *
  * @author Denis Zhdanov
- * @since Jun 5, 2010
+ * @since 21.06.2010
  */
 @Component
-public class StaticContentViewHelper {
+public class StaticViewHelper {
 
     private final AtomicReference<ServletContext> servletContext = new AtomicReference<ServletContext>();
     private final AtomicReference<String> internalContentPattern = new AtomicReference<String>();
     private final AtomicReference<String> defaultViewName = new AtomicReference<String>();
-    private final AtomicReference<String> baseTemplateName = new AtomicReference<String>();
-    private final AtomicReference<String> internalContentVarName = new AtomicReference<String>();
+    private final AtomicReference<CommonViewHelper> commonHelper = new AtomicReference<CommonViewHelper>();
 
     public ModelAndView map(String viewName) throws MalformedURLException {
-        String internalContentPath = mapToInternalContentPath(viewName);
+        String internalContentPath = String.format(internalContentPattern.get(), viewName);
         String viewToUse = viewName;
         if (servletContext.get().getResource(internalContentPath) == null) {
             viewToUse = defaultViewName.get();
         }
-        return new ModelAndView(
-                baseTemplateName.get(), 
-                Collections.singletonMap(internalContentVarName.get(), viewToUse)
-        );
+
+        return commonHelper.get().map(viewToUse, ViewType.STATIC);
     }
 
     //TODO den add doc
@@ -52,25 +46,13 @@ public class StaticContentViewHelper {
         internalContentPattern.set(pattern);
     }
 
-    //TODO den add doc
-    @Value("#{webContent.baseTemplateName}")
-    public void setBaseTemplateName(String name) {
-        baseTemplateName.set(name);
-    }
-
-    //TODO den add doc
-    @Value("#{webContent.internalContentVarName}")
-    public void setInternalContentVarName(String name) {
-        internalContentVarName.set(name);
-    }
-
     @Autowired
     public void setServletContext(ServletContext context) {
         servletContext.set(context);
     }
 
-    //TODO den add doc
-    private String mapToInternalContentPath(String internalContentName) {
-        return String.format(internalContentPattern.get(), internalContentName);
+    @Autowired
+    public void setCommonHelper(CommonViewHelper helper) {
+        commonHelper.set(helper);
     }
 }

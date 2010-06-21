@@ -1,5 +1,6 @@
-package org.denis.webview.content;
+package org.denis.webview.staticcontent;
 
+import org.denis.webview.view.CommonViewHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -19,10 +20,10 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StaticContentController {
 
     private final AtomicReference<String> defaultViewName = new AtomicReference<String>();
-    private final StaticContentViewHelper viewHelper;
+    private final StaticViewHelper viewHelper;
 
     @Autowired
-    public StaticContentController(StaticContentViewHelper viewHelper) {
+    public StaticContentController(StaticViewHelper viewHelper) {
         this.viewHelper = viewHelper;
     }
 

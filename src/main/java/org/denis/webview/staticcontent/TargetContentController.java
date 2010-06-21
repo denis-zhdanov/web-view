@@ -1,16 +1,13 @@
-package org.denis.webview.content;
+package org.denis.webview.staticcontent;
 
+import org.denis.webview.view.CommonViewHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.ServletContext;
 import java.net.MalformedURLException;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * //TODO den add doc
@@ -21,10 +18,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @Controller
 public class TargetContentController {
 
-    private final StaticContentViewHelper viewHelper;
+    private final StaticViewHelper viewHelper;
 
     @Autowired
-    public TargetContentController(StaticContentViewHelper viewHelper) {
+    public TargetContentController(StaticViewHelper viewHelper) {
         this.viewHelper = viewHelper;
     }
 

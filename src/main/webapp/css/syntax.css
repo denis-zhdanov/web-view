@@ -37,6 +37,10 @@ form input[type=image] {
     float: left;
 }
 
+.all-options-wrapper img, .horizontal-option-current img + img {
+    cursor: pointer;
+}
+
 .all-options-wrapper {
     display: none;
 }

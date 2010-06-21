@@ -20,7 +20,7 @@
             </ul>
         </div>
         <div id="content">
-            #set ($contentToIncludePah = "content/" + $content + ".vm")
+            #set ($contentToIncludePah = "$content")
             #parse($contentToIncludePah)
         </div>
     </body>

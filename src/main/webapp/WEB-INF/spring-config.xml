@@ -10,6 +10,7 @@
     
     <context:component-scan base-package="org.denis.webview"/>
     <util:properties id="webContent" location="WEB-INF/property/web-content.properties"/>
+    <context:property-placeholder properties-ref="webContent"/>
 
     <bean id="velocityConfig" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
         <property name="resourceLoaderPath" value="/WEB-INF/vm/"/>
@@ -20,5 +21,10 @@
         <property name="prefix" value=""/>
         <property name="suffix" value=".vm"/>
     </bean>
+
+    <util:map id="vewTypesTemplates" key-type="org.denis.webview.view.ViewType">
+        <entry key="STATIC" value="${staticTemplate}"/>
+        <entry key="SYNTAX" value="${syntaxTemplate}"/>
+    </util:map>
 
 </beans>
