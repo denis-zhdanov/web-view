@@ -1,5 +1,6 @@
 #set($options = [
-    {"paramName": "ide", "values": ["idea", "eclipse", "netbeans"], "defaultValue": "idea"}
+    {"paramName": "ide", "values": ["idea", "eclipse", "netbeans"], "defaultValue": "idea"},
+    {"paramName": "language", "values": ["xml", "java"], "defaultValue": "java"}
 ])
 
 <form action="/syntax/highlight.html" method="post">
@@ -21,6 +22,7 @@
                 </div>
             </div>
         #end
+        <input type="image" src="/pic/generate.png" alt="Generate">
     </div>
     <div id="target-source-wrapper">
         <textarea id="target-source" name="source"></textarea>

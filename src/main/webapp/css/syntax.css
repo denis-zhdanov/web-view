@@ -27,6 +27,12 @@ div.horizontal-option-wrapper img {
     height: 3em;
 }
 
+form input[type=image] {
+    margin-top: 3em;
+    width: 7em;
+    height: 3em;
+}
+
 .horizontal-option-current, .all-options-wrapper {
     float: left;
 }
