@@ -30,12 +30,7 @@ public class UrlDecodingReader extends AbstractReplacingFilterReader {
     }
 
     @Override
-    protected int copy(DataContext dataContext) {
-        if (dataContext.internalEnd <= dataContext.internalStart) {
-            // Nothing to copy.
-            return 0;
-        }
-
+    protected int copy(DataContext dataContext) throws IllegalStateException {
         int result = 0;
         for (
             int externalBufferOffset = dataContext.externalOffset,
@@ -61,10 +56,6 @@ public class UrlDecodingReader extends AbstractReplacingFilterReader {
                         = dataContext.internalBuffer[dataContext.internalStart];
             }
         }
-
-        if (dataContext.internalStart == dataContext.internalEnd) {
-            dataContext.internalStart = dataContext.internalEnd = 0;
-        }
         return result;
     }
 
@@ -77,9 +68,9 @@ public class UrlDecodingReader extends AbstractReplacingFilterReader {
      * @param offset    offset within the given buffer that points to the first of the two hexadecimal digits
      *                  corresponding to the character values in the <code>ISO-8859-1</code> character-set
      * @return          decoded character
-     * @throws IllegalArgumentException     if buffer data at the given offset is inconsistent with url encoding rules
+     * @throws IllegalStateException     if buffer data at the given offset is inconsistent with url encoding rules
      */
-    private char decode(char[] buf, int offset) throws IllegalArgumentException {
+    private char decode(char[] buf, int offset) throws IllegalStateException {
         byteBuffer.clear();
         byteBuffer.put(toByte(buf, offset));
         byteBuffer.flip();
@@ -98,9 +89,9 @@ public class UrlDecodingReader extends AbstractReplacingFilterReader {
      * @param buffer     target symbols buffer which data portion is to be decoded to its numeric representation
      * @param offset     offset to use within the given buffer
      * @return           byte corresponding to the hex symbols from the given array at the givne offset
-     * @throws IllegalArgumentException     if given symbols don't represent valid hex value
+     * @throws IllegalStateException     if given symbols don't represent valid hex value
      */
-    private static byte toByte(char[] buffer, int offset) throws IllegalArgumentException {
+    private static byte toByte(char[] buffer, int offset) throws IllegalStateException {
         int result = 0;
         for (int i = offset; i < offset + 2; ++i) {
             char c = buffer[i];

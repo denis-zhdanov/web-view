@@ -12,7 +12,7 @@ import java.io.Reader;
  * Current reader decodes those information to usual unicode java characters on the fly. E.g. consider that we
  * have a mixed English-Russian text which encoded representation looks like
  * {@code 'this+is+a+%26%231090%3B%26%231077%3B%26%231089%3B%26%231090%3B'}. Current reader performs url decoding at
- * first (produces {@code 'this is a &#1090;&#1077;&#1089;&#1090;'}) and html decoding at second that produces
+ * first (produces {@code 'this is a &amp;#1090;&amp;#1077;&amp;#1089;&amp;#1090;'}) and html decoding at second that produces
  * {@code 'this is a тест'}.
  *
  * @author Denis Zhdanov

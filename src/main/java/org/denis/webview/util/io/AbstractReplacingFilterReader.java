@@ -140,10 +140,16 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
      *
      * @param dataContext        holds target data to copy
      * @return                   number of characters actually written to the given external buffer
+     * @throws IllegalStateException    if it's encountered that decorated symbol stream contains invalid data
      */
-    protected abstract int copy(DataContext dataContext);
+    protected abstract int copy(DataContext dataContext) throws IllegalStateException;
 
     private int copy(char[] externalBuffer, int externalOffset, int externalLength) {
+        if (internalBufferEndOffset <= internalBufferStartOffset) {
+            resetInternalBufferIfPossible();
+            // Nothing to copy.
+            return 0;
+        }
         dataContext.externalBuffer = externalBuffer;
         dataContext.externalOffset = externalOffset;
         dataContext.externalLength = externalLength;
@@ -156,7 +162,15 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
         internalBufferStartOffset = dataContext.internalStart;
         internalBufferEndOffset = dataContext.internalEnd;
 
+        resetInternalBufferIfPossible();
+
         return result;
+    }
+
+    private void resetInternalBufferIfPossible() {
+        if (internalBufferStartOffset > 0 && internalBufferEndOffset <= internalBufferStartOffset) {
+            internalBufferStartOffset = internalBufferEndOffset = 0;
+        }
     }
 
     /**

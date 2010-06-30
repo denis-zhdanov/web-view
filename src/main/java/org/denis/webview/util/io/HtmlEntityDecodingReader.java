@@ -13,27 +13,107 @@ import java.io.Reader;
  * @author Denis Zhdanov
  * @since Jun 27, 2010
  */
-public class HtmlEntityDecodingReader extends FilterReader {
+public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
+
+    /**
+     * Enumerates possible HTML entities encoding types.
+     */
+    private enum EntityEncodingType {
+
+        /** The entity is encoded like '<code>&amp;#NNN;'</code> (where <code>'NNN'</code> are decimal numbers) */
+        DECIMAL,
+
+        /** The entity is encoded like '<code>&amp;#xHHH;'</code> (where <code>'HHH'</code> are hex numbers) */
+        HEX,
+
+        /** The entity is encoded via its unique name like '<code>&amp;NAME;'</code>, e.g. <code>'&amp;amp;'</code> */
+        CHARACTER
+    }
 
     public HtmlEntityDecodingReader(Reader in) {
         super(in);
     }
 
-    /**
-     * Reads characters from the wrapped stream into a portion of a given array performing
-     * <a href="http://www.w3.org/TR/html4/sgml/entities.html">HTML character entities decoding</a> if necessary.
-     *
-     * @param buf       destination buffer
-     * @param off       offset at which to start storing characters
-     * @param len       maximum number of characters to read
-     * @return          the number of characters read, or <code>-1</code> if the end of the stream has been reached
-     * @throws IllegalArgumentException     if any of the given arguments is invalid or if given buffer
-     *                                      contains data that is inconsistent with html entity encoding rules
-     * @throws IOException                  in case of unexpected exception during I/O processing
-     */
     @Override
-    public int read(char[] buf, int off, int len) throws IllegalArgumentException, IOException {
+    protected int copy(DataContext dataContext) throws IllegalStateException {
+        int result = 0;
+        for (
+            int externalBufferOffset = dataContext.externalOffset,
+                externalBufferMaxOffset = dataContext.externalOffset + dataContext.externalLength;
+            dataContext.internalStart < dataContext.internalEnd && externalBufferOffset < externalBufferMaxOffset;
+            ++dataContext.internalStart, ++result)
+        {
+            if (dataContext.internalBuffer[dataContext.internalStart] != '&') {
+                dataContext.externalBuffer[externalBufferOffset++]
+                    = dataContext.internalBuffer[dataContext.internalStart];
+                continue;
+            }
+
+            // Current internal buffer offset points to the entity start.
+            EntityEncodingType entityType = parseEntityType(dataContext);
+            if (entityType == null) {
+                break;
+            }
+
+            switch (entityType) {
+                case DECIMAL: decodeDecimalEntity(dataContext); break;
+                case HEX: decodeHexEntity(dataContext); break;
+                case CHARACTER: decodeCharacterEntity(dataContext); break;
+                default: //TODO den throw exception
+            }
+        }
+        return result;
+
+    }
+
+    /**
+     * Assumes that given {@link DataContext#internalBuffer 'raw data' buffer} holds <code>'&amp;'</code> at
+     * position identified by {@link DataContext#internalStart start offset} and tries to determine type
+     * of the entity encoding.
+     *
+     * @param dataContext       target data holder
+     * @return                  type of encoded entity contained at <code>'raw data'</code> buffer if
+     *                          it's possible determine the one; <code>null</code> if <code>'raw data'</code>
+     *                          buffer doesn't contain complete entity data
+     * @throws IllegalStateException        if it's encountered that given <code>'raw'</code> data is invalid 
+     */
+    private EntityEncodingType parseEntityType(DataContext dataContext) throws IllegalStateException {
         //TODO den impl
-        return 0;
+    }
+
+    /**
+     * Decodes data from the {@link DataContext#internalBuffer 'raw data buffer'} assuming that it's encoding type
+     * is {@link EntityEncodingType#DECIMAL} and puts it to {@link DataContext#externalBuffer target buffer}.
+     * <p/>
+     * This method is responsible for assigning correct new values to buffer offsets if necessary.
+     *
+     * @param dataContext       target data holder
+     */
+    private void decodeDecimalEntity(DataContext dataContext) {
+        //TODO den impl
+    }
+
+    /**
+     * Decodes data from the {@link DataContext#internalBuffer 'raw data buffer'} assuming that it's encoding type
+     * is {@link EntityEncodingType#HEX} and puts it to {@link DataContext#externalBuffer target buffer}.
+     * <p/>
+     * This method is responsible for assigning correct new values to buffer offsets if necessary.
+     *
+     * @param dataContext       target data holder
+     */
+    private void decodeHexEntity(DataContext dataContext) {
+        //TODO den impl
+    }
+
+    /**
+     * Decodes data from the {@link DataContext#internalBuffer 'raw data buffer'} assuming that it's encoding type
+     * is {@link EntityEncodingType#CHARACTER} and puts it to {@link DataContext#externalBuffer target buffer}.
+     * <p/>
+     * This method is responsible for assigning correct new values to buffer offsets if necessary.
+     *
+     * @param dataContext       target data holder
+     */
+    private void decodeCharacterEntity(DataContext dataContext) {
+        //TODO den impl
     }
 }

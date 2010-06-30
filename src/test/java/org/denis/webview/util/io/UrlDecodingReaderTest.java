@@ -14,36 +14,6 @@ import java.io.StringReader;
 public class UrlDecodingReaderTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullBuffer() throws IOException {
-        getReader("test").read(null, 0, 1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void negativeReadOffset() throws IOException {
-        getReader("test").read(new char[0], -1, 1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void tooBigReadOffset() throws IOException {
-        getReader("test").read(new char[1], 1, 1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void negativeLength() throws IOException {
-        getReader("test").read(new char[1], 0, -1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void zeroLength() throws IOException {
-        getReader("test").read(new char[1], 0, 0);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void tooBigReadLength() throws IOException {
-        getReader("test").read(new char[1], 0, 2);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void invalidHexSymbols() throws IOException {
         getReader("%AG").read(new char[5]);
     }
