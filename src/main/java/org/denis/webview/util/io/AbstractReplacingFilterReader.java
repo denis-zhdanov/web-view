@@ -167,6 +167,48 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
         return result;
     }
 
+    /**
+     * Allows to answer if given symbol is a decimal digit.
+     *
+     * @param c     symbol to check
+     * @return      <code>true</code> if given symbol represents decimal digit; <code>false</code> otherwise
+     */
+    protected static boolean isDecimalDigit(char c) {
+        return '0' <= c && c <= '9';
+    }
+
+    /**
+     * Allows to answer if given symbol is a hex digit.
+     *
+     * @param c     symbol to check
+     * @return      <code>true</code> if given symbol represents decimal digit; <code>false</code> otherwise
+     */
+    protected static boolean isHexDigit(char c) {
+        return isDecimalDigit(c) || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f');
+    }
+
+    /**
+     * Converts given symbol representation of decimal or hex symbol to its numeric value.
+     *
+     * @param c     symbol representation of the target symbol
+     * @return      numeric representation of the given symbol
+     * @throws IllegalArgumentException     if given symbols doesn't represent decimal or hex symbol
+     */
+    protected static int toNumber(char c) throws IllegalArgumentException {
+        if (c >= '0' && c <= '9') {
+            return c - '0';
+        }
+        if (c >= 'A' && c <= 'F') {
+            return c - 'A' + 10;
+        }
+        if (c >= 'a' && c <= 'f') {
+            return c - 'a' + 10;
+        }
+        throw new IllegalArgumentException(String.format("Can't covert given symbol (%c) to number. Reason: "
+            + "the symbol is expected to represent decimal or hex value, i.e. belong to one of the following "
+            + "ranges - [0; 9], ['a'; 'f'] or ['A'; 'F']", c));
+    }
+
     private void resetInternalBufferIfPossible() {
         if (internalBufferStartOffset > 0 && internalBufferEndOffset <= internalBufferStartOffset) {
             internalBufferStartOffset = internalBufferEndOffset = 0;
@@ -181,7 +223,7 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
      * @param len       available length to use with the given buffer
      * @throws IllegalArgumentException     if any of the given parameters is invalid
      */
-    private void checkReadArguments(char[] buf, int off, int len) throws IllegalArgumentException {
+    private static void checkReadArguments(char[] buf, int off, int len) throws IllegalArgumentException {
         if (buf == null) {
             throw new IllegalArgumentException(String.format("Can't read data to the given char buffer. "
                     + "Reason: it is null. Offset: %d, length: %d", off, len));
