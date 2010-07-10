@@ -16,6 +16,49 @@ import java.util.Map;
 public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
 
     private static final char ENTITY_END_SIGN = ';';
+    
+    private static final Map<String, Character> ENTITIES = new HashMap<String, Character>();
+    static {
+
+        // Markup and internationalization.
+        registerEntity("quot", 34);
+        registerEntity("amp", 38);
+        registerEntity("lt", 60);
+        registerEntity("gt", 62);
+        registerEntity("OElig", 338);
+        registerEntity("oelig", 339);
+        registerEntity("Scaron", 352);
+        registerEntity("scaron", 353);
+        registerEntity("Yml", 376);
+        registerEntity("circ", 710);
+        registerEntity("tilde", 732);
+        registerEntity("ensp", 8194);
+        registerEntity("emsp", 8195);
+        registerEntity("thinsp", 8201);
+        registerEntity("zwnj", 8204);
+        registerEntity("zwj", 8205);
+        registerEntity("lrm", 8206);
+        registerEntity("rlm", 8207);
+        registerEntity("ndash", 8211);
+        registerEntity("mdash", 8212);
+        registerEntity("lsquo", 8216);
+        registerEntity("rsquo", 8217);
+        registerEntity("sbquo", 8218);
+        registerEntity("ldquo", 8220);
+        registerEntity("rdquo", 8221);
+        registerEntity("bdquo", 8222);
+        registerEntity("dagger", 8224);
+        registerEntity("Dagger", 8225);
+        registerEntity("permil", 8240);
+        registerEntity("lsaquo", 8249);
+        registerEntity("rsaquo", 8250);
+        registerEntity("euro", 8364);
+
+        //TODO den populate entities
+    }
+    private static void registerEntity(String name, int code) {
+        ENTITIES.put(name, (char)code);
+    }
 
     /**
      * Enumerates possible HTML entities encoding types.
@@ -37,6 +80,7 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
     static {
         HELPERS.put(EntityEncodingType.DECIMAL, new DecimalDecodingHelper());
         HELPERS.put(EntityEncodingType.HEX, new HexDecodingHelper());
+        HELPERS.put(EntityEncodingType.CHARACTER, new CharacterDecodingHelper());
     }
 
     public HtmlEntityDecodingReader(Reader in) {
@@ -88,6 +132,7 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
                 return false;
             }
             if (dataContext.internalBuffer[startOffsetToUse] == 'x') {
+                startOffsetToUse++;
                 type = EntityEncodingType.HEX;
             }
         } else {
@@ -239,6 +284,77 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
         @Override
         public int getMaxSymbolsNumber() {
             return MAX_SYMBOLS_NUMBER;
+        }
+    }
+
+    private static class CharacterDecodingHelper implements DecodingHelper {
+
+        private static final int MAX_SYMBOLS_NUMBER;
+        static {
+            int max = -1;
+            for (String name : ENTITIES.keySet()) {
+                max = Math.max(max, name.length());
+            }
+            MAX_SYMBOLS_NUMBER = max + 2 /* for '&' and ';' signs. */;
+        }
+
+        @Override
+        public int processSymbol(char c, int code) {
+            // Don't bother with invalid symbol because there is a rather small limit to the max
+            // possible symbols number.
+            return 0;
+        }
+
+        @Override
+        public char decode(DataContext dataContext, int offset, int code) {
+            //TODO den impl
+            return 0;
+        }
+
+        @Override
+        public int getMaxSymbolsNumber() {
+            return MAX_SYMBOLS_NUMBER;
+        }
+    }
+
+    private static class AbstractCharSequence implements CharSequence {
+        @Override
+        public int hashCode() {
+            int result = 0;
+            for (int i = 0; i < length(); ++i) {
+                result = result * 29 + charAt(i);
+            }
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof CharSequence)) {
+                return false;
+            }
+            return super.equals(obj);
+        }
+    }
+
+    private static class CharArrayCharSequence implements CharSequence {
+
+        private char[] data;
+        private int start;
+        private int end;
+
+        @Override
+        public int length() {
+            return 0;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return 0;
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return null;
         }
     }
 }

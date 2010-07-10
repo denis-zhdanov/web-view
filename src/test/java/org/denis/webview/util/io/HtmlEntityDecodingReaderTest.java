@@ -32,5 +32,13 @@ public class HtmlEntityDecodingReaderTest extends AbstractReplacingFilterReaderT
         doTest("&#33;&#36;&#35;", "!$#");
     }
 
-    //TODO den add tests for hex
+    @Test(expected = IllegalStateException.class)
+    public void tooManySymbolsAtHexEntity() throws Exception {
+        getReader(String.format("&#x%s1;", Integer.toBinaryString(Character.MAX_VALUE) + '1')).read(new char[16]);
+    }
+
+    @Test
+    public void hexSymbols() throws Exception {
+        doTest("&#x442;&#x0435;&#x441;&#x0442;", "\u0442\u0435\u0441\u0442");
+    }
 }
