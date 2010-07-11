@@ -17,7 +17,7 @@ public class UrlDecodingReaderTest extends AbstractReplacingFilterReaderTest<Url
         getReader("%AG").read(new char[5]);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalStateException.class)
     public void incompleteHexData() throws Exception {
         UrlDecodingReader reader = getReader("%A");
         reader.read(new char[5]);

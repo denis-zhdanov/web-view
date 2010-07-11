@@ -17,8 +17,231 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
 
     private static final char ENTITY_END_SIGN = ';';
     
-    private static final Map<String, Character> ENTITIES = new HashMap<String, Character>();
+    private static final Map<CharSequence, Character> ENTITIES = new HashMap<CharSequence, Character>();
     static {
+        // ISO-8859-1 characters
+        registerEntity("nbsp", 160);
+        registerEntity("iexcl", 161);
+        registerEntity("cent", 162);
+        registerEntity("pound", 163);
+        registerEntity("curren", 164);
+        registerEntity("yen", 165);
+        registerEntity("brvbar", 166);
+        registerEntity("sect", 167);
+        registerEntity("uml", 168);
+        registerEntity("copy", 169);
+        registerEntity("ordf", 170);
+        registerEntity("laquo", 171);
+        registerEntity("not", 172);
+        registerEntity("shy", 173);
+        registerEntity("reg", 174);
+        registerEntity("macr", 175);
+        registerEntity("deg", 176);
+        registerEntity("plusmn", 177);
+        registerEntity("sup2", 178);
+        registerEntity("sup3", 179);
+        registerEntity("acute", 180);
+        registerEntity("micro", 181);
+        registerEntity("para", 182);
+        registerEntity("middot", 183);
+        registerEntity("cedil", 184);
+        registerEntity("sup1", 185);
+        registerEntity("ordm", 186);
+        registerEntity("raquo", 187);
+        registerEntity("frac14", 188);
+        registerEntity("frac12", 189);
+        registerEntity("frac34", 190);
+        registerEntity("iquest", 191);
+        registerEntity("Agrave", 192);
+        registerEntity("Aacute", 193);
+        registerEntity("Acirc", 194);
+        registerEntity("Atilde", 195);
+        registerEntity("Auml", 196);
+        registerEntity("Aring", 197);
+        registerEntity("AElig", 198);
+        registerEntity("Ccedil", 199);
+        registerEntity("Egrave", 200);
+        registerEntity("Eacute", 201);
+        registerEntity("Ecirc", 202);
+        registerEntity("Euml", 203);
+        registerEntity("Igrave", 204);
+        registerEntity("Iacute", 205);
+        registerEntity("Icirc", 206);
+        registerEntity("Iuml", 207);
+        registerEntity("ETH", 208);
+        registerEntity("Ntilde", 209);
+        registerEntity("Ograve", 210);
+        registerEntity("Oacute", 211);
+        registerEntity("Ocirc", 212);
+        registerEntity("Otilde", 213);
+        registerEntity("Ouml", 214);
+        registerEntity("times", 215);
+        registerEntity("Oslash", 216);
+        registerEntity("Ugrave", 217);
+        registerEntity("Uacute", 218);
+        registerEntity("Ucirc", 219);
+        registerEntity("Uuml", 220);
+        registerEntity("Yacute", 221);
+        registerEntity("THORN", 222);
+        registerEntity("szlig", 223);
+        registerEntity("agrave", 224);
+        registerEntity("aacute", 225);
+        registerEntity("acirc", 226);
+        registerEntity("atilde", 227);
+        registerEntity("auml", 228);
+        registerEntity("aring", 229);
+        registerEntity("aelig", 230);
+        registerEntity("ccedil", 231);
+        registerEntity("egrave", 232);
+        registerEntity("eacute", 233);
+        registerEntity("ecirc", 234);
+        registerEntity("euml", 235);
+        registerEntity("igrave", 236);
+        registerEntity("iacute", 237);
+        registerEntity("icirc", 238);
+        registerEntity("iuml", 239);
+        registerEntity("eth", 240);
+        registerEntity("ntilde", 241);
+        registerEntity("ograve", 242);
+        registerEntity("oacute", 243);
+        registerEntity("ocirc", 244);
+        registerEntity("otilde", 245);
+        registerEntity("ouml", 246);
+        registerEntity("divide", 247);
+        registerEntity("oslash", 248);
+        registerEntity("ugrave", 249);
+        registerEntity("uacute", 250);
+        registerEntity("ucirc", 251);
+        registerEntity("uuml", 252);
+        registerEntity("yacute", 253);
+        registerEntity("thorn", 254);
+        registerEntity("yuml", 255);
+
+        // Mathematical, Greek and Symbolic characters
+        registerEntity("fnof", 402);
+        registerEntity("Alpha", 913);
+        registerEntity("Beta", 914);
+        registerEntity("Gamma", 915);
+        registerEntity("Delta", 916);
+        registerEntity("Epsilon", 917);
+        registerEntity("Zeta", 918);
+        registerEntity("Eta", 919);
+        registerEntity("Theta", 920);
+        registerEntity("Iota", 921);
+        registerEntity("Kappa", 922);
+        registerEntity("Lambda", 923);
+        registerEntity("Mu", 924);
+        registerEntity("Nu", 925);
+        registerEntity("Xi", 926);
+        registerEntity("Omicron", 927);
+        registerEntity("Pi", 928);
+        registerEntity("Rho", 929);
+        registerEntity("Sigma", 931);
+        registerEntity("Tau", 932);
+        registerEntity("Upsilon", 933);
+        registerEntity("Phi", 934);
+        registerEntity("Chi", 935);
+        registerEntity("Psi", 936);
+        registerEntity("Omega", 937);
+        registerEntity("alpha", 945);
+        registerEntity("beta", 946);
+        registerEntity("gamma", 947);
+        registerEntity("delta", 948);
+        registerEntity("epsilon", 949);
+        registerEntity("zeta", 950);
+        registerEntity("eta", 951);
+        registerEntity("theta", 952);
+        registerEntity("iota", 953);
+        registerEntity("kappa", 954);
+        registerEntity("lambda", 955);
+        registerEntity("mu", 956);
+        registerEntity("nu", 957);
+        registerEntity("xi", 958);
+        registerEntity("omicron", 959);
+        registerEntity("pi", 960);
+        registerEntity("rho", 961);
+        registerEntity("sigmaf", 962);
+        registerEntity("sigma", 963);
+        registerEntity("tau", 964);
+        registerEntity("upsilon", 965);
+        registerEntity("phi", 966);
+        registerEntity("chi", 967);
+        registerEntity("psi", 968);
+        registerEntity("omega", 969);
+        registerEntity("thetasym", 977);
+        registerEntity("upsih", 978);
+        registerEntity("piv", 982);
+        registerEntity("bull", 8226);
+        registerEntity("hellip", 8230);
+        registerEntity("prime", 8242);
+        registerEntity("Prime", 8243);
+        registerEntity("oline", 8254);
+        registerEntity("frasl", 8260);
+        registerEntity("weierp", 8472);
+        registerEntity("image", 8465);
+        registerEntity("real", 8476);
+        registerEntity("trade", 8482);
+        registerEntity("alefsym", 8501);
+        registerEntity("larr", 8592);
+        registerEntity("uarr", 8593);
+        registerEntity("rarr", 8594);
+        registerEntity("darr", 8595);
+        registerEntity("harr", 8596);
+        registerEntity("crarr", 8629);
+        registerEntity("lArr", 8656);
+        registerEntity("uArr", 8657);
+        registerEntity("rArr", 8658);
+        registerEntity("dArr", 8659);
+        registerEntity("hArr", 8660);
+        registerEntity("forall", 8704);
+        registerEntity("part", 8706);
+        registerEntity("exist", 8707);
+        registerEntity("empty", 8709);
+        registerEntity("nabla", 8711);
+        registerEntity("isin", 8712);
+        registerEntity("notin", 8713);
+        registerEntity("ni", 8715);
+        registerEntity("prod", 8719);
+        registerEntity("sum", 8721);
+        registerEntity("minus", 8722);
+        registerEntity("lowast", 8727);
+        registerEntity("radic", 8730);
+        registerEntity("prop", 8733);
+        registerEntity("infin", 8734);
+        registerEntity("ang", 8736);
+        registerEntity("and", 8743);
+        registerEntity("or", 8744);
+        registerEntity("cap", 8745);
+        registerEntity("cup", 8746);
+        registerEntity("int", 8747);
+        registerEntity("there4", 8756);
+        registerEntity("sim", 8764);
+        registerEntity("cong", 8773);
+        registerEntity("asymp", 8776);
+        registerEntity("ne", 8800);
+        registerEntity("equiv", 8801);
+        registerEntity("le", 8804);
+        registerEntity("ge", 8805);
+        registerEntity("sub", 8834);
+        registerEntity("sup", 8835);
+        registerEntity("nsub", 8836);
+        registerEntity("sube", 8838);
+        registerEntity("supe", 8839);
+        registerEntity("oplus", 8853);
+        registerEntity("otimes", 8855);
+        registerEntity("perp", 8869);
+        registerEntity("sdot", 8901);
+        registerEntity("lceil", 8968);
+        registerEntity("rceil", 8969);
+        registerEntity("lfloor", 8970);
+        registerEntity("rfloor", 8971);
+        registerEntity("lang", 9001);
+        registerEntity("rang", 9002);
+        registerEntity("loz", 9674);
+        registerEntity("spades", 9824);
+        registerEntity("clubs", 9827);
+        registerEntity("hearts", 9829);
+        registerEntity("diams", 9830);
 
         // Markup and internationalization.
         registerEntity("quot", 34);
@@ -53,11 +276,9 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
         registerEntity("lsaquo", 8249);
         registerEntity("rsaquo", 8250);
         registerEntity("euro", 8364);
-
-        //TODO den populate entities
     }
     private static void registerEntity(String name, int code) {
-        ENTITIES.put(name, (char)code);
+        ENTITIES.put(new CharArrayCharSequence(name), (char)code);
     }
 
     /**
@@ -83,8 +304,17 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
         HELPERS.put(EntityEncodingType.CHARACTER, new CharacterDecodingHelper());
     }
 
+    private static final int MAX_REPLACEMENT_SIZE;
+    static {
+        int max = 0;
+        for (DecodingHelper helper : HELPERS.values()) {
+            max = Math.max(helper.getMaxSymbolsNumber(), max);
+        }
+        MAX_REPLACEMENT_SIZE = max;
+    }
+
     public HtmlEntityDecodingReader(Reader in) {
-        super(in);
+        super(in, MAX_REPLACEMENT_SIZE);
     }
 
     @Override
@@ -292,11 +522,13 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
         private static final int MAX_SYMBOLS_NUMBER;
         static {
             int max = -1;
-            for (String name : ENTITIES.keySet()) {
+            for (CharSequence name : ENTITIES.keySet()) {
                 max = Math.max(max, name.length());
             }
             MAX_SYMBOLS_NUMBER = max + 2 /* for '&' and ';' signs. */;
         }
+
+        private final CharArrayCharSequence key = new CharArrayCharSequence();
 
         @Override
         public int processSymbol(char c, int code) {
@@ -307,8 +539,16 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
 
         @Override
         public char decode(DataContext dataContext, int offset, int code) {
-            //TODO den impl
-            return 0;
+            key.data = dataContext.internalBuffer;
+            key.start = dataContext.internalStart + 1 /* for '&' symbol */;
+            key.end = offset; // Assuming that offset points to entity closing symbol (';')
+            Character result = ENTITIES.get(key);
+            if (result == null) {
+                throw new IllegalStateException(String.format("Can't decode html entity '%s'. Reason: no mapping "
+                    + "is registered for it. Available mappings: %s", key, ENTITIES));
+            }
+
+            return result;
         }
 
         @Override
@@ -317,44 +557,4 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
         }
     }
 
-    private static class AbstractCharSequence implements CharSequence {
-        @Override
-        public int hashCode() {
-            int result = 0;
-            for (int i = 0; i < length(); ++i) {
-                result = result * 29 + charAt(i);
-            }
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof CharSequence)) {
-                return false;
-            }
-            return super.equals(obj);
-        }
-    }
-
-    private static class CharArrayCharSequence implements CharSequence {
-
-        private char[] data;
-        private int start;
-        private int end;
-
-        @Override
-        public int length() {
-            return 0;
-        }
-
-        @Override
-        public char charAt(int index) {
-            return 0;
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end) {
-            return null;
-        }
-    }
 }

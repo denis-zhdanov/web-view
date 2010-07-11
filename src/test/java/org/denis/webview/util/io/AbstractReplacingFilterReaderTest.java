@@ -12,7 +12,8 @@ import static org.junit.Assert.assertEquals;
  * @author Denis Zhdanov
  * @since 06/27/2010
  */
-public class AbstractReplacingFilterReaderTest<T extends AbstractReplacingFilterReader> {
+@SuppressWarnings({"MethodMayBeStatic", "UnusedDeclaration"})
+public abstract class AbstractReplacingFilterReaderTest<T extends AbstractReplacingFilterReader> {
 
     private final ReaderProvider<T> readerProvider;
 
@@ -26,7 +27,7 @@ public class AbstractReplacingFilterReaderTest<T extends AbstractReplacingFilter
 
     @Test(expected = IllegalArgumentException.class)
     public void nullReaderAtConstructor() {
-        new AbstractReplacingFilterReader(null) {
+        new AbstractReplacingFilterReader(null, 1) {
             @Override
             protected int copy(DataContext dataContext) {
                 return 0;
@@ -35,7 +36,7 @@ public class AbstractReplacingFilterReaderTest<T extends AbstractReplacingFilter
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void negativeInitialBufferSize() throws Exception {
+    public void negativeMaxReplacementValue() throws Exception {
         new AbstractReplacingFilterReader(new StringReader("test"), -1) {
             @Override
             protected int copy(DataContext dataContext) throws IllegalStateException {
@@ -45,7 +46,7 @@ public class AbstractReplacingFilterReaderTest<T extends AbstractReplacingFilter
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void zeroInitialBufferSize() throws Exception {
+    public void zeroMaxReplacementValue() throws Exception {
         new AbstractReplacingFilterReader(new StringReader("test"), 0) {
             @Override
             protected int copy(DataContext dataContext) throws IllegalStateException {
@@ -84,6 +85,33 @@ public class AbstractReplacingFilterReaderTest<T extends AbstractReplacingFilter
     }
 
     protected void doTest(String in, String out) throws Exception {
+        testWithSingleCharRead(in, out);
+        testWithSmallBuffer(in, out);
+        testWithBigBuffer(in, out);
+    }
+
+    private void testWithSingleCharRead(String in, String out) throws Exception {
+        T reader = getReader(in);
+        StringBuilder builder = new StringBuilder();
+        int read;
+        while ((read = reader.read()) >= 0) {
+            builder.append((char)read);
+        }
+        assertEquals(out, builder.toString());
+    }
+
+    private void testWithSmallBuffer(String in, String out) throws Exception {
+        T reader = getReader(in);
+        StringBuilder builder = new StringBuilder();
+        char[] buffer = new char[2];
+        int read;
+        while ((read = reader.read(buffer)) >= 0) {
+            builder.append(new String(buffer, 0, read));
+        }
+        assertEquals(out, builder.toString());
+    }
+
+    private void testWithBigBuffer(String in, String out) throws Exception {
         T reader = getReader(in);
         StringBuilder builder = new StringBuilder();
         char[] buffer = new char[1024];
@@ -92,9 +120,8 @@ public class AbstractReplacingFilterReaderTest<T extends AbstractReplacingFilter
             builder.append(new String(buffer, 0, read));
         }
         assertEquals(out, builder.toString());
-        //TODO den add tests for small buffer processing
-        //TODO den add tests for single symbol reading
     }
+
 
     public interface ReaderProvider<T extends AbstractReplacingFilterReader> {
         T getReader(String in) throws Exception;

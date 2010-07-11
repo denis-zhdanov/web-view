@@ -14,9 +14,8 @@ import java.io.Reader;
  * <p/>
  * <b>Memory overhead</b>
  * Current class uses additional char array during performing target conversion. It's default size is defined
- * by {@link #DEFAULT_INTERNAL_BUFFER_SIZE} constant (may be customized during current object construction).
- * It may expand in runtime but not more than the size of the buffer used by client during calls to
- * {@link #read(char[], int, int)}.
+ * by {@link #DEFAULT_INTERNAL_BUFFER_SIZE} constant. It may expand in runtime but not more than the size of
+ * the buffer used by client during calls to {@link #read(char[], int, int)}.
  *
  * @author Denis Zhdanov
  * @since Jun 27, 2010
@@ -27,6 +26,11 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
     public static final int DEFAULT_INTERNAL_BUFFER_SIZE = 1024;
 
     private final DataContext dataContext = new DataContext();
+
+    /** Char array used during {@link #read() single char reading}. */
+    private final char[] singleCharReadBuffer = new char[1];
+
+    private final int maxReplacementSize;
 
     /**
      * Internal buffer large enough to perform single symbol decoding if necessary.
@@ -46,32 +50,30 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
     private int internalBufferEndOffset;
 
     /**
-     * Constructs new <code>AbstractReplacingFilterReader</code> object with
-     * {@link #DEFAULT_INTERNAL_BUFFER_SIZE default internal buffer size}.
-     *
-     * @param in                            input symbol stream to decorate
-     * @throws IllegalArgumentException     if given argument is <code>null</code>
-     */
-    public AbstractReplacingFilterReader(Reader in) throws IllegalArgumentException {
-        this(in, DEFAULT_INTERNAL_BUFFER_SIZE);
-    }
-
-    /**
      * Constructs new <code>AbstractReplacingFilterReader</code> object that decorates given symbol input stream
      * and uses internal buffer of initial size defined via given parameter.
      *
      * @param in                                input stream to decorate
-     * @param initialBufferSize                 initial size of internal buffer to use
+     * @param maxReplacementSize                maximum number of symbols that may be replaced by the actual
+     *                                          implementation class. For example replacement stream that works
+     *                                          with http url-decoded entities should deliver '3' here because
+     *                                          at most three symbols may be replaced ({@code %XX} pattern)
      * @throws IllegalArgumentException         if given symbol stream argument is <code>null</code> or initial
      *                                          buffer size is not positive
      */
-    public AbstractReplacingFilterReader(Reader in, int initialBufferSize) throws IllegalArgumentException {
+    public AbstractReplacingFilterReader(Reader in, int maxReplacementSize) throws IllegalArgumentException {
         super(checkReaderOnConstruction(in));
-        if (initialBufferSize <= 0) {
+        if (maxReplacementSize <= 0) {
             throw new IllegalArgumentException(String.format("Can't create decorator for symbol stream '%s'. Reason: "
-                + "given initial buffer size is not positive (%d)", in, initialBufferSize));
+                + "given max replacement size is not positive (%d)", in, maxReplacementSize));
         }
-        internalBuffer = new char[initialBufferSize];
+
+        this.maxReplacementSize = maxReplacementSize;
+        int bufferSizeToUse = DEFAULT_INTERNAL_BUFFER_SIZE;
+        while (bufferSizeToUse < maxReplacementSize) {
+            bufferSizeToUse <<= 1;
+        }
+        internalBuffer = new char[bufferSizeToUse];
     }
 
     private static Reader checkReaderOnConstruction(Reader in) throws IllegalArgumentException {
@@ -82,6 +84,15 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
         return in;
     }
 
+    @Override
+    public int read() throws IOException {
+        int read = read(singleCharReadBuffer);
+        if (read < 0) {
+            return read;
+        }
+        return singleCharReadBuffer[0];
+    }
+
     /**
      * Reads characters from the wrapped stream into a portion of a given array performing
      * <a href="http://www.w3schools.com/TAGS/ref_urlencode.asp">url decoding</a> if necessary.
@@ -90,12 +101,13 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
      * @param off       offset at which to start storing characters
      * @param len       maximum number of characters to read
      * @return          the number of characters read, or <code>-1</code> if the end of the stream has been reached
-     * @throws IllegalArgumentException     if any of the given arguments is invalid or if given buffer
-     *                                      contains data that is inconsistent with url encoding rules
+     * @throws IllegalArgumentException     if any of the given arguments is invalid
+     * @throws IllegalStateException        if target decorated stream contains data that is inconsistent with url
+     *                                      encoding rules
      * @throws IOException                  in case of unexpected exception during I/O processing
      */
     @Override
-    public int read(char[] buf, int off, int len) throws IOException {
+    public int read(char[] buf, int off, int len) throws IllegalArgumentException, IllegalStateException, IOException {
         checkReadArguments(buf, off, len);
         int copiedCharactersNumber = copy(buf, off, len);
         if (copiedCharactersNumber == len) {
@@ -103,11 +115,16 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
         }
 
         int lengthToUse = len - copiedCharactersNumber;
-        initInternalBuffer(len);
-        int read = super.read(internalBuffer, internalBufferStartOffset, lengthToUse - getCachedSymbolsNumber());
+        initInternalBuffer(Math.max(len, maxReplacementSize));
+        int read = super.read(
+            internalBuffer, internalBufferStartOffset, internalBuffer.length - internalBufferEndOffset
+        );
         if (read < 0) {
+            if (copiedCharactersNumber > 0) {
+                return copiedCharactersNumber;
+            }
             if (getCachedSymbolsNumber() > 0) {
-                throw new IllegalArgumentException(String.format("Detected situation that target symbol stream ends "
+                throw new IllegalStateException(String.format("Detected situation that target symbol stream ends "
                         + "with the data that is inconsistent with url encoding rules - '%s'",
                         new String(internalBuffer, internalBufferStartOffset, getCachedSymbolsNumber())));
             }
@@ -115,7 +132,7 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
         }
 
         internalBufferEndOffset += read;
-        return copy(buf, off, lengthToUse);
+        return copiedCharactersNumber + copy(buf, off + copiedCharactersNumber, lengthToUse);
     }
 
     /**
@@ -246,19 +263,19 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
     }
 
     /**
-     * Expands internal buffer if necessary in accordance with the given client buffer length.
+     * Expands internal buffer if necessary in accordance with the given target buffer length.
      *
-     * @param clientBufferLength        length of the client buffer used during reading
+     * @param bufferLengthToEnsure        length of continuous space that should be available at {@link #internalBuffer}
      */
-    private void initInternalBuffer(int clientBufferLength) {
+    private void initInternalBuffer(int bufferLengthToEnsure) {
         // Keep internal buffer as is if it's trailing free space is big enough.
-        if (clientBufferLength - getCachedSymbolsNumber() <= internalBuffer.length - internalBufferEndOffset) {
+        if (bufferLengthToEnsure - getCachedSymbolsNumber() <= internalBuffer.length - internalBufferEndOffset) {
             return;
         }
 
         // Perform internal buffer defragmentation if that frees continuous empty space that is big enough to
         // hold target data length.
-        if (clientBufferLength <= internalBuffer.length) {
+        if (bufferLengthToEnsure <= internalBuffer.length) {
             System.arraycopy(internalBuffer, internalBufferStartOffset, internalBuffer, 0, getCachedSymbolsNumber());
             internalBufferEndOffset = getCachedSymbolsNumber();
             internalBufferStartOffset = 0;
@@ -266,7 +283,7 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
         }
 
         // Create new buffer that is wide enough and replace currently used one with it.
-        char[] newBuffer = new char[clientBufferLength];
+        char[] newBuffer = new char[bufferLengthToEnsure];
         if (getCachedSymbolsNumber() > 0) {
             System.arraycopy(internalBuffer, internalBufferStartOffset, newBuffer, 0, getCachedSymbolsNumber());
         }
@@ -298,5 +315,94 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
 
         /** Offset within the given internal buffer that points to location just after the raw data (exclusive) */
         public int internalEnd;
+    }
+
+    /**
+     * Defines {@link #hashCode()} and {@link #equals(Object)} for generic {@link CharSequence} implementations.
+     */
+    protected static abstract class AbstractCharSequence implements CharSequence {
+        @Override
+        public int hashCode() {
+            int result = 0;
+            for (int i = 0; i < length(); ++i) {
+                result = result * 29 + charAt(i);
+            }
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof CharSequence)) {
+                return false;
+            }
+            CharSequence that = (CharSequence) obj;
+            if (length() != that.length()) {
+                return false;
+            }
+            for (int i = 0; i < length(); ++i) {
+                if (charAt(i) != that.charAt(i)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public CharSequence subSequence(final int start, final int end) {
+            return new CharSequence() {
+                @Override
+                public int length() {
+                    return end - start;
+                }
+
+                @Override
+                public char charAt(int index) {
+                    return AbstractCharSequence.this.charAt(index + start);
+                }
+
+                @Override
+                public CharSequence subSequence(int s, int e) {
+                    return AbstractCharSequence.this.subSequence(start + s, end + e);
+                }
+            };
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buffer = new StringBuilder();
+            for (int i = 0; i < length(); ++i) {
+                buffer.append(charAt(i));
+            }
+            return buffer.toString();
+        }
+    }
+
+    protected static class CharArrayCharSequence extends AbstractCharSequence {
+
+        public char[] data;
+        public int start;
+        public int end;
+
+        public CharArrayCharSequence() {
+        }
+
+        public CharArrayCharSequence(String s) {
+            this(s.toCharArray());
+        }
+
+        public CharArrayCharSequence(char[] data) {
+            this.data = data;
+            this.end = data.length;
+        }
+
+        @Override
+        public int length() {
+            return end - start;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return data[start + index];
+        }
     }
 }

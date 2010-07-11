@@ -88,7 +88,7 @@ public class UrlDecodingReader extends AbstractReplacingFilterReader {
      *
      * @param buffer     target symbols buffer which data portion is to be decoded to its numeric representation
      * @param offset     offset to use within the given buffer
-     * @return           byte corresponding to the hex symbols from the given array at the givne offset
+     * @return           byte corresponding to the hex symbols from the given array at the given offset
      * @throws IllegalStateException     if given symbols don't represent valid hex value
      */
     private static byte toByte(char[] buffer, int offset) throws IllegalStateException {
