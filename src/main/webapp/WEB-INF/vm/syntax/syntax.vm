@@ -4,7 +4,7 @@
             <img src="/pic/${option}.png" alt="${option}"/>
         </div>
         <div id="target-source-wrapper">
-            <div id="clipboard-source"></div>
+            <div id="clipboard-source">$highlighted</div>
             <pre id="target-source"></pre>
         </div>
     #end

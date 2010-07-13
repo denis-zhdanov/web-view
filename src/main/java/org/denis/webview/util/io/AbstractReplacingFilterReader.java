@@ -1,5 +1,7 @@
 package org.denis.webview.util.io;
 
+import org.denis.webview.util.AbstractCharSequence;
+
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -315,94 +317,5 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
 
         /** Offset within the given internal buffer that points to location just after the raw data (exclusive) */
         public int internalEnd;
-    }
-
-    /**
-     * Defines {@link #hashCode()} and {@link #equals(Object)} for generic {@link CharSequence} implementations.
-     */
-    protected static abstract class AbstractCharSequence implements CharSequence {
-        @Override
-        public int hashCode() {
-            int result = 0;
-            for (int i = 0; i < length(); ++i) {
-                result = result * 29 + charAt(i);
-            }
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof CharSequence)) {
-                return false;
-            }
-            CharSequence that = (CharSequence) obj;
-            if (length() != that.length()) {
-                return false;
-            }
-            for (int i = 0; i < length(); ++i) {
-                if (charAt(i) != that.charAt(i)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        @Override
-        public CharSequence subSequence(final int start, final int end) {
-            return new CharSequence() {
-                @Override
-                public int length() {
-                    return end - start;
-                }
-
-                @Override
-                public char charAt(int index) {
-                    return AbstractCharSequence.this.charAt(index + start);
-                }
-
-                @Override
-                public CharSequence subSequence(int s, int e) {
-                    return AbstractCharSequence.this.subSequence(start + s, end + e);
-                }
-            };
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buffer = new StringBuilder();
-            for (int i = 0; i < length(); ++i) {
-                buffer.append(charAt(i));
-            }
-            return buffer.toString();
-        }
-    }
-
-    protected static class CharArrayCharSequence extends AbstractCharSequence {
-
-        public char[] data;
-        public int start;
-        public int end;
-
-        public CharArrayCharSequence() {
-        }
-
-        public CharArrayCharSequence(String s) {
-            this(s.toCharArray());
-        }
-
-        public CharArrayCharSequence(char[] data) {
-            this.data = data;
-            this.end = data.length;
-        }
-
-        @Override
-        public int length() {
-            return end - start;
-        }
-
-        @Override
-        public char charAt(int index) {
-            return data[start + index];
-        }
     }
 }

@@ -1,5 +1,7 @@
 package org.denis.webview.util.io;
 
+import org.denis.webview.util.CharArrayCharSequence;
+
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;

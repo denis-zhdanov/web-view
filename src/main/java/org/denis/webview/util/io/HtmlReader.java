@@ -1,6 +1,6 @@
 package org.denis.webview.util.io;
 
-import java.io.IOException;
+import java.io.FilterReader;
 import java.io.Reader;
 
 /**
@@ -18,21 +18,9 @@ import java.io.Reader;
  * @author Denis Zhdanov
  * @since Jun 26, 2010
  */
-public class HtmlReader extends Reader {
-
-    private final HtmlEntityDecodingReader reader;
+public class HtmlReader extends FilterReader {
 
     public HtmlReader(Reader in) {
-        reader = new HtmlEntityDecodingReader(new UrlDecodingReader(in));
-    }
-
-    @Override
-    public int read(char[] buf, int off, int len) throws IOException {
-        return reader.read(buf, off, len);
-    }
-
-    @Override
-    public void close() throws IOException {
-        reader.close();
+        super(new HtmlEntityDecodingReader(new UrlDecodingReader(in)));
     }
 }
