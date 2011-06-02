@@ -1,4 +1,4 @@
-package org.denis.webview.syntax.logic;
+package org.denis.webview.util;
 
 import java.util.Arrays;
 

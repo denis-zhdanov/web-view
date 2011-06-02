@@ -1,7 +1,5 @@
 package org.denis.webview.util;
 
-import org.denis.webview.util.io.AbstractReplacingFilterReader;
-
 /**
  * Defines {@link #hashCode()} and {@link #equals(Object)} for generic {@link CharSequence} implementation
  * that doesn't check counterparty class. I.e. implementations of different sub-classes of the current class
@@ -11,7 +9,7 @@ public abstract class AbstractCharSequence implements CharSequence {
     @Override
     public int hashCode() {
         int result = 0;
-        for (int i = 0; i < length(); ++i) {
+        for (int i = 0, max = Math.min(100, length()); i < max; ++i) {
             result = result * 29 + charAt(i);
         }
         return result;

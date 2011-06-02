@@ -1,15 +1,15 @@
 package org.denis.webview.syntax.web;
 
 import org.apache.velocity.context.InternalContextAdapter;
-import org.apache.velocity.exception.MethodInvocationException;
-import org.apache.velocity.exception.ParseErrorException;
-import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.Renderable;
 import org.denis.webview.config.Ide;
 import org.denis.webview.config.SourceType;
-import org.denis.webview.syntax.logic.SyntaxHighlightProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.denis.webview.util.CharArrayCharSequence;
+import org.denis.webview.util.io.HtmlEntityDecodingReader;
+import org.denis.webview.util.io.HttpParametersReader;
+import org.denis.webview.util.io.UrlDecodingReader;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -29,14 +29,26 @@ import java.util.Map;
  * @since Jun 24, 2010
  */
 @Component
-@Scope(WebApplicationContext.SCOPE_REQUEST)
+@Scope(value = WebApplicationContext.SCOPE_REQUEST,  proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class SyntaxHighlightRenderable implements Renderable {
 
     private static final Map<CharSequence, Class<?>> REQUEST_PARAMETER_NAMES = new HashMap<CharSequence, Class<?>>();
+    private static final Map<Class<?>, Map<String, Object>> ENUM_MEMBERS = new HashMap<Class<?>, Map<String, Object>>();
     static {
-        REQUEST_PARAMETER_NAMES.put("ide", Ide.class);
-        REQUEST_PARAMETER_NAMES.put("language", SourceType.class);
+        register("ide", Ide.class, Ide.values());
+        register("language", SourceType.class, SourceType.values());
     }
+
+    private static <T extends Enum<T>> void register(String requestParamName, Class<T> enumClass, T[] values) {
+        REQUEST_PARAMETER_NAMES.put(new CharArrayCharSequence(requestParamName), enumClass);
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        for (T value : values) {
+            map.put(value.toString(), value);
+        }
+        ENUM_MEMBERS.put(enumClass, map);
+    }
+
     private static final String SOURCE_PARAMETER_NAME = "source";
 
     /** Buffer used during syntax highlighting processing. */
@@ -46,7 +58,7 @@ public class SyntaxHighlightRenderable implements Renderable {
     private final CharBuffer paramsBuffer = CharBuffer.allocate(32);
 
     private Reader reader;
-    private SyntaxHighlightProcessor highlightRequestProcessor;
+    private boolean newParamStarted;
 
     @Override
     public boolean render(InternalContextAdapter context, Writer writer)
@@ -55,51 +67,78 @@ public class SyntaxHighlightRenderable implements Renderable {
         Map<Class<?>, Object> params = parseParams();
 
         // Parse tokens.
-
+        //TODO den impl
 
         return false;
     }
 
     public void setReader(Reader reader) {
-        this.reader = reader;
+        this.reader = new HtmlEntityDecodingReader(new UrlDecodingReader(new HttpParametersReader(
+            reader,
+            new Runnable() {
+                @Override
+                public void run() {
+                    newParamStarted = true;
+                }
+            }
+        )));
     }
 
-    @Autowired
-    public void setHighlightRequestProcessor(SyntaxHighlightProcessor processor) {
-        highlightRequestProcessor = processor;
-    }
-
-    enum Target { KEY, EQ_SIGN, VALUE }
+    enum Target { KEY, VALUE }
+    @SuppressWarnings({"unchecked", "EqualsBetweenInconvertibleTypes"})
     private Map<Class<?>, Object> parseParams() throws IOException, IllegalArgumentException {
         Map<Class<?>, Object> params = getParamsHolder();
         readerBuffer.clear();
         paramsBuffer.clear();
         int read;
         Target target = Target.KEY;
-        while ((read = reader.read(readerBuffer)) >= 0) {
-            while (--read >= 0) {
+        Class<?> currentKey = null;
+        CharArrayCharSequence mapKey = new CharArrayCharSequence();
+        while (reader.read(readerBuffer) >= 0) {
+            readerBuffer.flip();
+            while (readerBuffer.hasRemaining()) {
+                char c = readerBuffer.get();
                 switch (target) {
                     case KEY:
-                        char c = readerBuffer.get();
                         if (c == '=') {
-                            //TODO den impl
+                            mapKey.updateState(paramsBuffer.array(), 0, paramsBuffer.position());
+                            if (mapKey.equals(SOURCE_PARAMETER_NAME)) {
+                                return params;
+                            }
+                            currentKey = REQUEST_PARAMETER_NAMES.get(mapKey);
+                            target = Target.VALUE;
+                            paramsBuffer.clear();
                         } else {
                             paramsBuffer.put(c);
                         }
                         break;
+                    case VALUE:
+                        paramsBuffer.put(c);
                 }
             }
+            readerBuffer.clear();
+            if (newParamStarted) {
+                newParamStarted = false;
+                if (currentKey != null) {
+                    String valueAsString = new String(paramsBuffer.array(), 0, paramsBuffer.position()).toUpperCase();
+                    Map<String, Object> map = ENUM_MEMBERS.get(currentKey);
+                    Object value = map.get(valueAsString);
+                    if (value != null) {
+                        params.put(currentKey, value);
+                    }
+                }
+
+                paramsBuffer.clear();
+                target = Target.KEY;
+            }
         }
+        return params;
     }
 
     private static Map<Class<?>, Object> getParamsHolder() {
         Map<Class<?>, Object> result = new HashMap<Class<?>, Object>();
         result.put(Ide.class, Ide.IDEA);
-        result.put(SourceType.class, null);
+        result.put(SourceType.class, SourceType.JAVA);
         return result;
-    }
-
-    private static void validateHighlightParams(Map<Class<?>, Object> params) throws IllegalArgumentException {
-        //TODO den impl
     }
 }

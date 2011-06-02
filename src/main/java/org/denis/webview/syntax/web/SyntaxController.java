@@ -1,7 +1,6 @@
 package org.denis.webview.syntax.web;
 
 import org.apache.velocity.runtime.Renderable;
-import org.denis.webview.util.io.HtmlReader;
 import org.denis.webview.view.CommonViewHelper;
 import org.denis.webview.view.ViewType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * //TODO den add doc
+ * Controller for syntax requests, i.e. requests to actually highlight target text.
  *
  * @author Denis Zhdanov
  * @since 21.06.2010
@@ -36,7 +35,7 @@ public class SyntaxController {
 
     @RequestMapping("/syntax/**")
     public ModelAndView handle(Reader reader) throws IOException {
-        renderable.setReader(new HtmlReader(reader));
+        renderable.setReader(reader);
         Map<String, Renderable> parameters
             = Collections.<String, Renderable>singletonMap(HIGHLIGHTED_VAR_NAME, renderable);
         return viewHelper.map(HIGHLIGHT_VIEW_NAME, ViewType.SYNTAX, parameters);

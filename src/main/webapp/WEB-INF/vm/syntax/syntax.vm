@@ -1,11 +1,4 @@
-<div id="source-options">
-    #foreach($option in $options)
-        <div class="horizontal-option-current">
-            <img src="/pic/${option}.png" alt="${option}"/>
-        </div>
-        <div id="target-source-wrapper">
-            <div id="clipboard-source">$highlighted</div>
-            <pre id="target-source"></pre>
-        </div>
-    #end
+<div id="target-source-wrapper">
+    <div id="clipboard-source">$highlighted</div>
+    <pre id="target-source"></pre>
 </div>
