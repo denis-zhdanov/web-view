@@ -10,12 +10,19 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <spring.version>3.0.2.RELEASE</spring.version>
-        <velocity.version>1.7-beta1</velocity.version>
+        <spring.version>3.0.5.RELEASE</spring.version>
+        <velocity.version>1.7</velocity.version>
+        <jflex.version>1.4.3</jflex.version>
         <jmock.version>2.5.1</jmock.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>de.jflex</groupId>
+            <artifactId>jflex</artifactId>
+            <version>${jflex.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.velocity</groupId>
@@ -42,22 +49,28 @@
             <version>${spring.version}</version>
         </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
             <version>${spring.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jmock</groupId>
             <artifactId>jmock</artifactId>
+            <version>${jmock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jmock</groupId>
+            <artifactId>jmock-junit4</artifactId>
             <version>${jmock.version}</version>
             <scope>test</scope>
         </dependency>
@@ -80,6 +93,31 @@
 
     <build>
         <finalName>syntax-highlighter</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>maven-jflex-plugin</artifactId>
+                <version>${jflex.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>${project.build.sourceDirectory}</outputDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
