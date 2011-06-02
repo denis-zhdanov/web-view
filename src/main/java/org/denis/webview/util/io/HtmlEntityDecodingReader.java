@@ -541,9 +541,11 @@ public class HtmlEntityDecodingReader extends AbstractReplacingFilterReader {
 
         @Override
         public char decode(DataContext dataContext, int offset, int code) {
-            key.data = dataContext.internalBuffer;
-            key.start = dataContext.internalStart + 1 /* for '&' symbol */;
-            key.end = offset; // Assuming that offset points to entity closing symbol (';')
+            key.updateState(
+                dataContext.internalBuffer,
+                dataContext.internalStart + 1 /* for '&' symbol */,
+                offset // Assuming that offset points to entity closing symbol (';')
+            );
             Character result = ENTITIES.get(key);
             if (result == null) {
                 throw new IllegalStateException(String.format("Can't decode html entity '%s'. Reason: no mapping "
