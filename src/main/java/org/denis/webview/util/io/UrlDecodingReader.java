@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 /**
- * Decorates {@link Reader symbols stream in order to provide transparent decoding of
+ * Decorates {@link Reader symbols stream} in order to provide transparent decoding of
  * <a href="http://www.w3schools.com/TAGS/ref_urlencode.asp">url encoded</a> text.
  * <p/>
  * Not thread-safe.
@@ -17,16 +17,21 @@ import java.nio.charset.CharsetDecoder;
  */
 public class UrlDecodingReader extends AbstractReplacingFilterReader {
 
-    private final CharsetDecoder decoder = Charset.forName("ISO-8859-1").newDecoder();
+    private final CharsetDecoder decoder;
 
     /** Buffer for holding raw symbol bytes during conversion to symbol. */
-    private final ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+    private final ByteBuffer byteBuffer = ByteBuffer.allocate(4);
 
     /** Buffer to store symbol converted from raw bytes. */
     private final CharBuffer charBuffer = CharBuffer.allocate(1);
 
     public UrlDecodingReader(Reader in) {
+        this(in, "UTF-8");
+    }
+
+    public UrlDecodingReader(Reader in, String encoding) {
         super(in, 3/* '3' is a length of percent symbol followed by two hex symbols */);
+        decoder = Charset.forName(encoding).newDecoder();
     }
 
     @Override
@@ -47,8 +52,12 @@ public class UrlDecodingReader extends AbstractReplacingFilterReader {
                         // Internal buffer doesn't contain enough data to decode the symbol.
                         return  result;
                     }
-                    dataContext.externalBuffer[externalBufferOffset++]
-                        = decode(dataContext.internalBuffer, dataContext.internalStart + 1);
+                    if (decode(dataContext.internalBuffer, dataContext.internalStart + 1)) {
+                        dataContext.externalBuffer[externalBufferOffset++] = charBuffer.get();
+                        charBuffer.clear();
+                    } else {
+                        --result; // Assuming that result is incremented at 'for'.
+                    }
                     dataContext.internalStart += 2;
                     break;
                 default:
@@ -67,17 +76,26 @@ public class UrlDecodingReader extends AbstractReplacingFilterReader {
      * @param buf       target buffer
      * @param offset    offset within the given buffer that points to the first of the two hexadecimal digits
      *                  corresponding to the character values in the <code>ISO-8859-1</code> character-set
-     * @return          decoded character
+     * @return          <code>true</code> if the character is encoded; <code>false</code> otherwise (e.g. when
+     *                  non-ASCII symbol is encoded)
      * @throws IllegalStateException     if buffer data at the given offset is inconsistent with url encoding rules
      */
-    private char decode(char[] buf, int offset) throws IllegalStateException {
-        byteBuffer.clear();
+    private boolean decode(char[] buf, int offset) throws IllegalStateException {
         byteBuffer.put(toByte(buf, offset));
+        int position = byteBuffer.position();
         byteBuffer.flip();
         charBuffer.clear();
         decoder.decode(byteBuffer, charBuffer, true);
-        charBuffer.flip();
-        return charBuffer.get();
+        if (charBuffer.position() > 0) {
+            byteBuffer.clear();
+            charBuffer.flip();
+            return true;
+        }
+        else {
+            byteBuffer.position(position);
+            byteBuffer.limit(byteBuffer.capacity());
+            return false;
+        }
     }
 
     /**

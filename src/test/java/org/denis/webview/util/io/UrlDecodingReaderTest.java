@@ -48,4 +48,12 @@ public class UrlDecodingReaderTest extends AbstractReplacingFilterReaderTest<Url
             "this is a &#1090;&#1077;&#1089;&#1090;"
         );
     }
+
+    @Test
+    public void nonAsciiSymbols() throws Exception {
+        doTest(
+            "ide=%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%BE%D0%B5+%D1%81%D0%BB%D0%BE%D0%B2%D0%BE&language=java",
+            "ide=русское слово&language=java"
+        );
+    }
 }
