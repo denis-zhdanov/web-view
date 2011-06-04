@@ -1,4 +1,4 @@
-package org.denis.webview.util;
+package org.denis.webview.util.string;
 
 /**
  * Defines {@link #hashCode()} and {@link #equals(Object)} for generic {@link CharSequence} implementation

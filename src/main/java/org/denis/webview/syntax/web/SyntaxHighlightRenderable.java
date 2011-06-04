@@ -4,7 +4,7 @@ import org.apache.velocity.context.InternalContextAdapter;
 import org.apache.velocity.runtime.Renderable;
 import org.denis.webview.config.Ide;
 import org.denis.webview.config.SourceType;
-import org.denis.webview.util.CharArrayCharSequence;
+import org.denis.webview.util.string.CharArrayCharSequence;
 import org.denis.webview.util.io.HtmlEntityDecodingReader;
 import org.denis.webview.util.io.HttpParametersReader;
 import org.denis.webview.util.io.UrlDecodingReader;
@@ -59,6 +59,7 @@ public class SyntaxHighlightRenderable implements Renderable {
 
     private Reader reader;
     private boolean newParamStarted;
+
 
     @Override
     public boolean render(InternalContextAdapter context, Writer writer)

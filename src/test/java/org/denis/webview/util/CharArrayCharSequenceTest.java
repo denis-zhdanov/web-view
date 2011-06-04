@@ -1,5 +1,6 @@
 package org.denis.webview.util;
 
+import org.denis.webview.util.string.CharArrayCharSequence;
 import org.junit.Before;
 import org.junit.Test;
 

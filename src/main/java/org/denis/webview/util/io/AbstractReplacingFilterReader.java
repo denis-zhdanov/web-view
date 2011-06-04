@@ -1,7 +1,5 @@
 package org.denis.webview.util.io;
 
-import org.denis.webview.util.AbstractCharSequence;
-
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;

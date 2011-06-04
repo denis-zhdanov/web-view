@@ -1,4 +1,4 @@
-package org.denis.webview.util;
+package org.denis.webview.util.string;
 
 /**
  * {@link AbstractCharSequence} implementation that manages target data at a char array.
