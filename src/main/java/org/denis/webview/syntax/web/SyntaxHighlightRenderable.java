@@ -4,6 +4,7 @@ import org.apache.velocity.context.InternalContextAdapter;
 import org.apache.velocity.runtime.Renderable;
 import org.denis.webview.config.Ide;
 import org.denis.webview.config.SourceType;
+import org.denis.webview.util.io.CharBufferReader;
 import org.denis.webview.util.string.CharArrayCharSequence;
 import org.denis.webview.util.io.HtmlEntityDecodingReader;
 import org.denis.webview.util.io.HttpParametersReader;
@@ -51,8 +52,15 @@ public class SyntaxHighlightRenderable implements Renderable {
 
     private static final String SOURCE_PARAMETER_NAME = "source";
 
-    /** Buffer used during syntax highlighting processing. */
+    /**
+     * Buffers used during syntax highlighting processing.
+     * <p/>
+     * We use two buffers here in order to avoid situation when particular token doesn't fit single buffer,
+     * e.g. it's start is contained at the buffer but the end is not (e.g. let get keyword 'private'. There
+     * is a possible case that we read 'pri' at the buffer only).
+     */
     private final CharBuffer readerBuffer = CharBuffer.allocate(1024);
+    private final CharBuffer readerBuffer2 = CharBuffer.allocate(1024);
 
     /** Buffer used during highlighting parameters parsing. */
     private final CharBuffer paramsBuffer = CharBuffer.allocate(32);
@@ -141,5 +149,26 @@ public class SyntaxHighlightRenderable implements Renderable {
         result.put(Ide.class, Ide.IDEA);
         result.put(SourceType.class, SourceType.JAVA);
         return result;
+    }
+
+    private class MyListener implements CharBufferReader.Listener {
+
+        private final CharBufferReader reader;
+        private final Writer           writer;
+
+        MyListener(Writer writer, CharBufferReader reader) {
+            this.writer = writer;
+            this.reader = reader;
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
+
+        @Override
+        public void onBufferEmpty() {
+            CharBuffer newBufferToUse = reader.getBuffer() == readerBuffer ? readerBuffer2 : readerBuffer;
+            // Flush
+        }
     }
 }
