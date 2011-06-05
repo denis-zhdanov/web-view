@@ -8,7 +8,7 @@ package org.denis.webview.syntax.logic;
  * @param <T>    token type
  */
 public interface TokenInfo<T> {
-    
+
     T getType();
     
     int getStartOffset();
