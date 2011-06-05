@@ -1,4 +1,4 @@
-package org.denis.webview.util;
+package org.denis.webview.util.string;
 
 import org.denis.webview.util.string.CharArrayCharSequence;
 import org.junit.Before;
