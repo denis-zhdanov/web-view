@@ -26,5 +26,9 @@ function onOptionClick(button) {
     currentOptionButton.alt = button.alt;
 
     var hiddenParameter = topOptionWrapper.childNodes[1];
-    hiddenParameter.value = button.alt
+    hiddenParameter.value = button.alt;
+
+    // Hide options.
+    var arrowButton = topOptionWrapper.childNodes[3].childNodes[3];
+    onOptionArrowClick(arrowButton);
 }
