@@ -1,14 +1,20 @@
 package org.denis.webview.syntax.web;
 
+import org.apache.log4j.Logger;
 import org.apache.velocity.context.InternalContextAdapter;
 import org.apache.velocity.runtime.Renderable;
 import org.denis.webview.config.Ide;
 import org.denis.webview.config.SourceType;
+import org.denis.webview.syntax.logic.Highlighter;
+import org.denis.webview.syntax.logic.HighlighterProvider;
+import org.denis.webview.syntax.logic.TokenInfo;
+import org.denis.webview.syntax.output.OutputProcessor;
 import org.denis.webview.util.io.CharBufferReader;
 import org.denis.webview.util.string.CharArrayCharSequence;
 import org.denis.webview.util.io.HtmlEntityDecodingReader;
 import org.denis.webview.util.io.HttpParametersReader;
 import org.denis.webview.util.io.UrlDecodingReader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -18,6 +24,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.CharBuffer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +57,9 @@ public class SyntaxHighlightRenderable implements Renderable {
         ENUM_MEMBERS.put(enumClass, map);
     }
 
+    Logger LOG = Logger.getLogger(SyntaxHighlightRenderable.class);
     private static final String SOURCE_PARAMETER_NAME = "source";
+    private static final int    BUFFER_SIZE           = 1024;
 
     /**
      * Buffers used during syntax highlighting processing.
@@ -59,12 +68,13 @@ public class SyntaxHighlightRenderable implements Renderable {
      * e.g. it's start is contained at the buffer but the end is not (e.g. let get keyword 'private'. There
      * is a possible case that we read 'pri' at the buffer only).
      */
-    private final CharBuffer readerBuffer = CharBuffer.allocate(1024);
-    private final CharBuffer readerBuffer2 = CharBuffer.allocate(1024);
+    private final ReadData readerData1 = new ReadData();
+    private final ReadData readerData2 = new ReadData();
 
     /** Buffer used during highlighting parameters parsing. */
     private final CharBuffer paramsBuffer = CharBuffer.allocate(32);
 
+    private HighlighterProvider highlighterProvider;
     private Reader reader;
     private boolean newParamStarted;
 
@@ -75,10 +85,20 @@ public class SyntaxHighlightRenderable implements Renderable {
         // Parse highlighting parameters.
         Map<Class<?>, Object> params = parseParams();
 
-        // Parse tokens.
-        //TODO den impl
+        // Setup output processor.
+        OutputProcessor outputProcessor = new OutputProcessor(writer);
 
-        return false;
+        // Setup rolling input symbol stream.
+        CharBufferListener readerListener = new CharBufferListener(outputProcessor);
+        CharBufferReader charBufferReader = new CharBufferReader(readerData1.buffer, readerListener);
+        readerListener.setReader(charBufferReader);
+
+        // Parse tokens.
+        Highlighter highlighter = highlighterProvider.getHighlighter((SourceType) params.get(SourceType.class));
+        highlighter.addListener(new HighlighterListener(outputProcessor));
+        highlighter.process(charBufferReader);
+
+        return true;
     }
 
     public void setReader(Reader reader) {
@@ -93,10 +113,16 @@ public class SyntaxHighlightRenderable implements Renderable {
         )));
     }
 
-    enum Target { KEY, VALUE }
+    @Autowired
+    public void setHighlighterProvider(HighlighterProvider highlighterProvider) {
+        this.highlighterProvider = highlighterProvider;
+    }
+
+    private enum Target { KEY, VALUE }
     @SuppressWarnings({"unchecked", "EqualsBetweenInconvertibleTypes"})
     private Map<Class<?>, Object> parseParams() throws IOException, IllegalArgumentException {
         Map<Class<?>, Object> params = getParamsHolder();
+        CharBuffer readerBuffer = readerData1.buffer;
         readerBuffer.clear();
         paramsBuffer.clear();
         int read;
@@ -151,14 +177,18 @@ public class SyntaxHighlightRenderable implements Renderable {
         return result;
     }
 
-    private class MyListener implements CharBufferReader.Listener {
+    private class CharBufferListener implements CharBufferReader.Listener {
 
-        private final CharBufferReader reader;
-        private final Writer           writer;
+        private final OutputProcessor outputProcessor;
 
-        MyListener(Writer writer, CharBufferReader reader) {
-            this.writer = writer;
-            this.reader = reader;
+        private CharBufferReader charBufferReader;
+
+        CharBufferListener(OutputProcessor outputProcessor) {
+            this.outputProcessor = outputProcessor;
+        }
+
+        public void setReader(CharBufferReader charBufferReader) {
+            this.charBufferReader = charBufferReader;
         }
 
         @Override
@@ -167,8 +197,75 @@ public class SyntaxHighlightRenderable implements Renderable {
 
         @Override
         public void onBufferEmpty() {
-            CharBuffer newBufferToUse = reader.getBuffer() == readerBuffer ? readerBuffer2 : readerBuffer;
-            // Flush
+            try {
+                readMoreData();
+            } catch (IOException e) {
+                LOG.warn("Unexpected I/O exception occurred during the processing", e);
+                try {
+                    reader.close();
+                } catch (IOException e1) {
+                    // Ignore
+                }
+            }
+        }
+
+        private void readMoreData() throws IOException {
+            ReadData newData = charBufferReader.getBuffer() == readerData1.buffer ? readerData2 : readerData1;
+
+            // Flush all data from the buffer if it has the one.
+            if (!newData.isEmpty()) {
+                outputProcessor.write(
+                    newData.buffer.array(), newData.bufferStart, newData.bufferEnd,
+                    Collections.<TokenInfo>emptyList()
+                );
+            }
+
+            newData.buffer.clear();
+            ReadData currentData = newData == readerData1 ? readerData2 : readerData1;
+            newData.readSymbols = reader.read(newData.buffer);
+            newData.bufferStart = 0;
+            newData.bufferEnd = newData.readSymbols;
+            newData.clientShift = currentData.clientShift + currentData.readSymbols;
+            charBufferReader.setBuffer(newData.buffer);
+        }
+    }
+
+    private class HighlighterListener implements Highlighter.Listener {
+
+        private final OutputProcessor outputProcessor;
+
+        public HighlighterListener(OutputProcessor outputProcessor) {
+            this.outputProcessor = outputProcessor;
+        }
+
+        @Override
+        public void onToken(TokenInfo<?> info) {
+            //TODO den impl
+        }
+    }
+
+    private static class ReadData {
+
+        /** Target buffer. */
+        public final CharBuffer buffer = CharBuffer.allocate(BUFFER_SIZE);
+
+        /** Offset of the first symbol of the current buffer that is not written to the output yet. */
+        public int bufferStart;
+
+        /** Offset beyond the last symbol of the current buffer that is not written to the output yet. */
+        public int bufferEnd;
+
+        /**
+         * Value to add to the {@link #bufferStart} in order to get offset for the whole client input.
+         */
+        public int clientShift;
+
+
+        /** Number of client input symbols read to the current data. */
+        public int readSymbols;
+
+        public boolean isEmpty() {
+            return bufferEnd > bufferStart;
         }
     }
 }
