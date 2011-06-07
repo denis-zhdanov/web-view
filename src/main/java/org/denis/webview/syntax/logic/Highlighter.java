@@ -28,8 +28,8 @@ public interface Highlighter {
      * @return            <code>true</code> if no such listener was registered before; <code>false</code> otherwise
      */
     boolean addListener(Listener listener);
-    
+
     interface Listener {
-        void onToken(TokenInfo<?> info);
+        void onToken(TokenInfo info);
     }
 }

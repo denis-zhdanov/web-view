@@ -1,5 +1,5 @@
 #set($options = [
-    {"paramName": "ide", "values": ["idea", "eclipse", "netbeans"], "defaultValue": "idea"},
+    {"paramName": "profile", "values": ["idea", "eclipse", "netbeans"], "defaultValue": "idea"},
     {"paramName": "language", "values": ["xml", "java"], "defaultValue": "java"}
 ])
 

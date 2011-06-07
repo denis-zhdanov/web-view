@@ -11,6 +11,11 @@ public interface TokenType {
         public Category getCategory() {
             return Category.END;
         }
+
+        @Override
+        public String toString() {
+            return "END";
+        }
     };
 
     Category getCategory();

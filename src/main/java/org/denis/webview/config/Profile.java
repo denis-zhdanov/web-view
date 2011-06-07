@@ -6,6 +6,6 @@ package org.denis.webview.config;
  * @author Denis Zhdanov
  * @since Jun 24, 2010
  */
-public enum Ide {
-    IDEA, ECLIPSE, NETBEANS
+public enum Profile {
+    IDEA, ECLIPSE, NETBEANS, /*CUSTOM*/
 }

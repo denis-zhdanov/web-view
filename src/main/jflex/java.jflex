@@ -1,16 +1,28 @@
 package org.denis.webview.syntax.logic.java;
 import static org.denis.webview.syntax.logic.java.JavaTokenType.*;
-import org.denis.webview.syntax.logic.TokenType;
+import org.denis.webview.syntax.logic.*;
 
 %%
 
 %class JavaLexer
 %unicode
+%implements Lexer
 %public
 %line
 %column
 %function advance
 %type TokenType
+%{
+@Override
+public int getStartOffset() {
+    return zzStartRead;
+}
+
+@Override
+public int getEndOffset() {
+    return zzMarkedPos;
+}
+%}
 
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
@@ -31,22 +43,12 @@ DecIntegerLiteral = 0 | [1-9][0-9]*
 
 %%
 
+.|\r|\n                 { /* ignore */ }
+
 <YYINITIAL> {
-    /* identifiers */
-    /*{Identifier}                   { return IDENTIFIER; }*/
- 
-    /* literals */
-    /*{DecIntegerLiteral}            { return INTEGER_LITERAL; }*/
-    /*\"                             { yybegin(STRING); }*/
-
-    /* comments */
-    \/\/                             { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START;  }
-    /*{TraditionalComment}           { return MULTI_LINE_COMMENT;  }*/
-
-    /* whitespace */
-    {WhiteSpace}                     { /* ignore */ }
+    "//"                { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START;  }
 }
 
 <END_LINE_COMMENT> {
-    {LineTerminator}                 { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {LineTerminator}    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
 }
