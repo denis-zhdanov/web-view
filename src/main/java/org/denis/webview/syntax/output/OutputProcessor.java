@@ -28,8 +28,8 @@ public class OutputProcessor {
     private final MarkupScheme markupScheme;
 
     public OutputProcessor(Writer writer, MarkupScheme markupScheme) {
-//        this.writer = writer;
-        this.writer = new org.denis.webview.util.io.DebugWriter(writer);
+        this.writer = writer;
+//        this.writer = new org.denis.webview.util.io.DebugWriter(writer);
         this.markupScheme = markupScheme;
     }
 
