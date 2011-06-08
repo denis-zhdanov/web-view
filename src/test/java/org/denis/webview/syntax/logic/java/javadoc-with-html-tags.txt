@@ -1,0 +1,9 @@
+<%JAVADOC_START>/**<%>
+ * not a html tag < and this <12
+ * but this is a tag <%JAVADOC_HTML_TAG_START><<%>test<%END_LOOK_AHEAD>
+<%> * empty <%JAVADOC_HTML_TAG_START><<%>element<%END>/><%>
+ * multiline <%JAVADOC_HTML_TAG_START><<%>element<%END>><%>
+ *   bla-bla
+ * <%JAVADOC_HTML_TAG_START></<%>element<%END>><%>
+ * open <%JAVADOC_HTML_TAG_START><<%>element<%END>><%>
+ <%END>*/<%>

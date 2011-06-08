@@ -8,7 +8,9 @@ package org.denis.webview.syntax.output.markup.inline;
  */
 public enum StyleAttribute {
     //TODO den implement rewrite without such explicit definition
-    COLOR("color"), FONT_WEIGHT("font-weight"), FONT_STYLE("font-style"), TEXT_DECORATION("text-decoration");
+    COLOR("color"), BACKGROUND_COLOR("background-color"),
+    
+    FONT_WEIGHT("font-weight"), FONT_STYLE("font-style"), TEXT_DECORATION("text-decoration");
 
     private final String cssName;
 

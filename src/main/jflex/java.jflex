@@ -27,7 +27,7 @@ public int getEndOffset() {
 LineTerminator = \r|\n|\r\n
 AnySymbol      = .|{LineTerminator}
 
-%state END_LINE_COMMENT MULTI_LINE_COMMENT DOC_TAG_AWARE_COMMENT DOC_TAG_UNAWARE_COMMENT DOC_TAG
+%state END_LINE_COMMENT MULTI_LINE_COMMENT DOC_TAG_AWARE_COMMENT DOC_TAG_UNAWARE_COMMENT DOC_TAG DOC_HTML_TAG
 
 %%
 
@@ -49,6 +49,7 @@ AnySymbol      = .|{LineTerminator}
 }                           
                             
 <DOC_TAG_AWARE_COMMENT>     {
+    "<"\/?/[:jletter:]      { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
     {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); }
     [^ *@{]                 { yybegin(DOC_TAG_UNAWARE_COMMENT); }
     "@"/[:jletterdigit:]    { yybegin(DOC_TAG); return JAVADOC_TAG_START; }
@@ -57,6 +58,7 @@ AnySymbol      = .|{LineTerminator}
 }
 
 <DOC_TAG_UNAWARE_COMMENT> {
+    "<"\/?/[:jletter:]      { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
     "{"|{LineTerminator}    { yybegin(DOC_TAG_AWARE_COMMENT); }
     "*/"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
     {AnySymbol}             { }
@@ -66,4 +68,11 @@ AnySymbol      = .|{LineTerminator}
     {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
     [:jletterdigit:]        { }
     {AnySymbol}             { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+}
+
+<DOC_HTML_TAG> {
+    {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    [:jletterdigit:]        { }
+    "/>"                    { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
+    {AnySymbol}             { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
 }

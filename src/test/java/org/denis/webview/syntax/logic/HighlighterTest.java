@@ -53,7 +53,7 @@ public class HighlighterTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ConstantConditions"})
     private void doTest(SourceType sourceType, Highlighter highlighter) throws IOException {
         
         // Discover test data.
@@ -70,6 +70,11 @@ public class HighlighterTest {
         }
         
         for (File file : testDataDir.listFiles()) {
+//            String interestedName = "javadoc-with-html-tags.txt";
+            String interestedName = null;
+            if (interestedName != null && !interestedName.equals(file.getName())) {
+                continue;
+            }
             final String message = String.format("'%s'", file.getName());
             StringBuilder buffer = new StringBuilder();
             BufferedReader reader = new BufferedReader(new FileReader(file));

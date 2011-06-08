@@ -21,11 +21,15 @@ public class OutputProcessor {
     private static final char[] START_TOKEN_SUFFIX = ">".toCharArray();
     private static final char[] END_TOKEN_MARK = "</span>".toCharArray();
 
+    private static final char[] LT = "&lt;".toCharArray();
+    private static final char[] GT = "&gt;".toCharArray();
+    
     private final Writer       writer;
     private final MarkupScheme markupScheme;
 
     public OutputProcessor(Writer writer, MarkupScheme markupScheme) {
         this.writer = writer;
+//        this.writer = new DebugWriter(writer);
         this.markupScheme = markupScheme;
     }
 
@@ -47,34 +51,57 @@ public class OutputProcessor {
 
     private void doWrite(char[] data, int start, int end, TokenType tokenType) throws IOException {
         if (tokenType == null) {
-            writer.write(data, start, end - start);
+            writeEscaped(data, start, end);
             return;
         }
 
         if (tokenType.getCategory() == TokenType.Category.END) {
-            writer.write(data, start, end - start);
+            writeEscaped(data, start, end);
             writer.write(END_TOKEN_MARK);
             return;
         }
 
         if (tokenType.getCategory() == TokenType.Category.END_LOOK_AHEAD) {
             writer.write(END_TOKEN_MARK);
-            writer.write(data, start, end - start);
+            writeEscaped(data, start, end);
         }
 
         char[] markup = markupScheme.getMarkup(tokenType);
         if (markup.length <= 0) {
-            writer.write(data, start, end - start);
+            writeEscaped(data, start, end);
             return;
         }
 
         writer.write(START_TOKEN_PREFIX);
         writer.write(markup);
         writer.write(START_TOKEN_SUFFIX);
-        writer.write(data, start, end - start);
+        writeEscaped(data, start, end);
 
         if (tokenType.getCategory() == TokenType.Category.COMPLETE) {
             writer.write(END_TOKEN_MARK);
+        }
+    }
+    
+    private void writeEscaped(char[] data, final int startOffset, final int endOffset) throws IOException {
+        for (int start = startOffset, end = startOffset; end < endOffset; ++end) {
+            char[] replacement = null;
+            switch (data[end]) {
+                case '<': replacement = LT; break;
+                case '>': replacement = GT; break;
+            }
+
+            if (replacement == null) {
+                if (end == endOffset - 1 && end > start) {
+                    writer.write(data, start, endOffset - start);
+                }
+                continue;
+            }
+            
+            if (end > start) {
+                writer.write(data, start, end - start);
+            }
+            writer.write(replacement);
+            start = end + 1;
         }
     }
 }
