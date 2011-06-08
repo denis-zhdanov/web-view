@@ -107,7 +107,8 @@ public class SyntaxHighlightRenderable implements Renderable {
     }
 
     public void setReader(Reader reader) {
-        this.reader = new HtmlEntityDecodingReader(new UrlDecodingReader(new HttpParametersReader(
+//        this.reader = new HtmlEntityDecodingReader(new UrlDecodingReader(new HttpParametersReader(
+        this.reader = new UrlDecodingReader(new HttpParametersReader(
             reader,
             new Runnable() {
                 @Override
@@ -115,7 +116,7 @@ public class SyntaxHighlightRenderable implements Renderable {
                     newParamStarted = true;
                 }
             }
-        )));
+        ));
     }
 
     @Autowired
@@ -243,6 +244,7 @@ public class SyntaxHighlightRenderable implements Renderable {
             newData.bufferShift = 0;
             newData.bufferEnd = newData.readSymbols;
             newData.clientShift = currentData.clientShift + currentData.readSymbols;
+            newData.buffer.flip();
             charBufferReader.setBuffer(newData.buffer);
             activeData = newData;
         }

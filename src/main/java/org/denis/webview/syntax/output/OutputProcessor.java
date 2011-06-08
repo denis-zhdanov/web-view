@@ -21,9 +21,10 @@ public class OutputProcessor {
     private static final char[] START_TOKEN_SUFFIX = ">".toCharArray();
     private static final char[] END_TOKEN_MARK = "</span>".toCharArray();
 
-    private static final char[] LT = "&lt;".toCharArray();
-    private static final char[] GT = "&gt;".toCharArray();
-    
+    private static final char[] LT  = "&lt;".toCharArray();
+    private static final char[] GT  = "&gt;".toCharArray();
+    private static final char[] AMP = "&amp;".toCharArray();
+
     private final Writer       writer;
     private final MarkupScheme markupScheme;
 
@@ -88,6 +89,7 @@ public class OutputProcessor {
             switch (data[end]) {
                 case '<': replacement = LT; break;
                 case '>': replacement = GT; break;
+                case '&': replacement = AMP; break;
             }
 
             if (replacement == null) {
