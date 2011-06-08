@@ -7,15 +7,14 @@ package org.denis.webview.syntax.output.markup.inline;
  * @since 6/7/11 6:30 PM
  */
 public enum StyleAttribute {
-    //TODO den implement rewrite without such explicit definition
-    COLOR("color"), BACKGROUND_COLOR("background-color"),
+    COLOR, BACKGROUND_COLOR,
     
-    FONT_WEIGHT("font-weight"), FONT_STYLE("font-style"), TEXT_DECORATION("text-decoration");
+    FONT_WEIGHT, FONT_STYLE, TEXT_DECORATION;
 
-    private final String cssName;
+    private String cssName;
 
-    StyleAttribute(String cssName) {
-        this.cssName = cssName;
+    StyleAttribute() {
+        cssName = toString().toLowerCase().replace("_", "-");
     }
 
     public String getCssName() {
