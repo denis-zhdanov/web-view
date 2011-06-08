@@ -31,6 +31,14 @@ public interface Highlighter {
      */
     boolean addListener(Listener listener);
 
+    /**
+     * De-registers previously registered listener.
+     * 
+     * @param listener    listener to de-register
+     * @return            <code>true</code> if given listener really was registered; <code>false</code> otherwise
+     */
+    boolean removeListener(Listener listener);
+
     interface Listener {
         void onToken(TokenInfo info);
     }

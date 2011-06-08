@@ -103,6 +103,7 @@ public class HighlighterProvider {
             int lastTokenEndOffset = 0;
             for (TokenType tokenType = lexer.advance(); tokenType != null; tokenType = lexer.advance()) {
                 TokenInfo tokenInfo = new TokenInfo(tokenType, lexer.getStartOffset(), lexer.getEndOffset());
+                lastTokenEndOffset = lexer.getEndOffset();
                 for (Listener listener : listeners) {
                     listener.onToken(tokenInfo);
                 }
@@ -135,6 +136,11 @@ public class HighlighterProvider {
         @Override
         public boolean addListener(Listener listener) {
             return listeners.add(listener);
+        }
+
+        @Override
+        public boolean removeListener(Listener listener) {
+            return listeners.remove(listener);
         }
     }
 }

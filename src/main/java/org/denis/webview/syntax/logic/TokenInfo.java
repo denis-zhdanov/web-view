@@ -31,6 +31,23 @@ public class TokenInfo {
     }
 
     @Override
+    public int hashCode() {
+        int result = tokenType != null ? tokenType.hashCode() : 0;
+        result = 31 * result + startOffset;
+        result = 31 * result + endOffset;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TokenInfo that = (TokenInfo) o;
+        return tokenType == that.tokenType && startOffset == that.startOffset && endOffset == that.endOffset;
+    }
+
+    @Override
     public String toString() {
         return tokenType + ": " + startOffset + "-" + endOffset;
     }
