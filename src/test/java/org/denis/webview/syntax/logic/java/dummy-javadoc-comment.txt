@@ -1,0 +1,6 @@
+first
+ <%JAVADOC_START>/**<%> second <%END>*/<%>
+third
+<%JAVADOC_START>/**<%>
+ * forth
+ <%END>*/<%>

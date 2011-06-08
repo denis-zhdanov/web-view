@@ -1,0 +1,4 @@
+first
+<%SINGLE_LINE_COMMENT_START>//<%> second<%END_LOOK_AHEAD>
+<%>third
+<%SINGLE_LINE_COMMENT_START>//<%> forth<%END%>

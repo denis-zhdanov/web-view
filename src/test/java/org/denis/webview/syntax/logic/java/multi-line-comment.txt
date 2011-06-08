@@ -1,0 +1,4 @@
+<%MULTI_LINE_COMMENT_START>/*<%> first
+second<%END>*/<%>
+third
+  <%MULTI_LINE_COMMENT_START>/*<%>forth<%END%>

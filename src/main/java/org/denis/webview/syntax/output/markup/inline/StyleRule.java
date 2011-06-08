@@ -9,6 +9,8 @@ package org.denis.webview.syntax.output.markup.inline;
 public class StyleRule {
     
     public static final StyleRule ITALIC = new StyleRule(StyleAttribute.FONT_STYLE, "italic");
+    public static final StyleRule BOLD = new StyleRule(StyleAttribute.FONT_WEIGHT, "bold");
+    public static final StyleRule UNDERLINE = new StyleRule(StyleAttribute.TEXT_DECORATION, "underline");
 
     private final StyleAttribute attribute;
     private final String         value;

@@ -57,6 +57,11 @@ public class OutputProcessor {
             return;
         }
 
+        if (tokenType.getCategory() == TokenType.Category.END_LOOK_AHEAD) {
+            writer.write(END_TOKEN_MARK);
+            writer.write(data, start, end - start);
+        }
+
         char[] markup = markupScheme.getMarkup(tokenType);
         if (markup.length <= 0) {
             writer.write(data, start, end - start);

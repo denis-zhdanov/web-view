@@ -1,0 +1,10 @@
+<%JAVADOC_START>/**<%>
+ * javadoc @param  @
+ * k @param
+   l @param
+ * @
+   @
+ *
+ * <%JAVADOC_TAG_START>@<%>author<%END_LOOK_AHEAD>
+<%>   <%JAVADOC_TAG_START>@<%>param<%END_LOOK_AHEAD> <%>bla-bla
+ <%END>*/<%>

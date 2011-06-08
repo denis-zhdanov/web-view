@@ -18,6 +18,18 @@ public interface TokenType {
         }
     };
 
+    final TokenType END_LOOK_AHEAD_TOKEN = new TokenType() {
+        @Override
+        public Category getCategory() {
+            return Category.END_LOOK_AHEAD;
+        }
+
+        @Override
+        public String toString() {
+            return "END_LOOK_AHEAD";
+        }
+    };
+
     Category getCategory();
 
     /**
@@ -33,6 +45,17 @@ public interface TokenType {
         /** Defines token start. */
         START,
 
+        /**
+         * Defines token end where client is not interested at end offset.
+         * <p/>
+         * For example we may want to match javadoc tag and discover its start by token of {@link #START} type.
+         * Then it's necessary to find its end like the offset of the first non-symbol-digit symbol.
+         * Resulting rule will be something like [^\d\w], i.e. it will match, for example, white space. However,
+         * we don't want to apply the javadoc token rule to that white space as it's used just as end token
+         * mark here. So, we can use this category.
+         */
+        END_LOOK_AHEAD,
+        
         /** Defines token end. */
         END,
 

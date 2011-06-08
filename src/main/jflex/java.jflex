@@ -25,30 +25,45 @@ public int getEndOffset() {
 %}
 
 LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
-WhiteSpace     = {LineTerminator} | [ \t\f]
+AnySymbol      = .|{LineTerminator}
 
-/* comments */
-Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
-
-TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
-EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}
-DocumentationComment = "/**" {CommentContent} "*"+ "/"
-CommentContent       = ( [^*] | \*+ [^/*] )*
-
-Identifier = [:jletter:] [:jletterdigit:]*
-
-DecIntegerLiteral = 0 | [1-9][0-9]*
-%state END_LINE_COMMENT
+%state END_LINE_COMMENT MULTI_LINE_COMMENT DOC_TAG_AWARE_COMMENT DOC_TAG_UNAWARE_COMMENT DOC_TAG
 
 %%
 
-.|\r|\n                 { /* ignore */ }
-
 <YYINITIAL> {
-    "//"                { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START;  }
+    "//"                    { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START; }
+    "/**"                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return JAVADOC_START; }
+    "/*"                    { yybegin(MULTI_LINE_COMMENT); return MULTI_LINE_COMMENT_START; }
+    {AnySymbol}             {}
+}                           
+                            
+<END_LINE_COMMENT> {        
+    {LineTerminator}        { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    .                       {}
+}                           
+                            
+<MULTI_LINE_COMMENT> {      
+    "*/"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {AnySymbol}             {}
+}                           
+                            
+<DOC_TAG_AWARE_COMMENT>     {
+    {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); }
+    [^ *@]                  { yybegin(DOC_TAG_UNAWARE_COMMENT); }
+    "@"/[:jletterdigit:]    { yybegin(DOC_TAG); return JAVADOC_TAG_START; }
+    "*/"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {AnySymbol}             {}
 }
 
-<END_LINE_COMMENT> {
-    {LineTerminator}    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+<DOC_TAG_UNAWARE_COMMENT> {
+    {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); }
+    "*/"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {AnySymbol}             {}
+}                           
+                            
+<DOC_TAG> {                 
+    {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    " "                     { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {AnySymbol}             {}
 }

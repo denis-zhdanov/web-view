@@ -30,6 +30,7 @@ public class HighlighterTest {
     private static final Map<String, TokenType> TOKEN_TYPES = new HashMap<String, TokenType>();
     static {
         register(TokenType.END_TOKEN);
+        register(TokenType.END_LOOK_AHEAD_TOKEN);
         register(JavaTokenType.values());
     }
     

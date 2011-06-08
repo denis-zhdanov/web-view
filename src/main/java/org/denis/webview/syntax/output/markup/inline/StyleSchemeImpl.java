@@ -35,8 +35,8 @@ public class StyleSchemeImpl implements StyleScheme {
         return result == null ? Collections.<StyleRule>emptyList() : result;
     }
 
-    public void register(TokenType tokenType, StyleRule rule) {
-        register(tokenType, Collections.singleton(rule));
+    public void register(TokenType tokenType, StyleRule ... rules) {
+        register(tokenType, Arrays.asList(rules));
     }
 
     public void register(TokenType tokenType, Collection<StyleRule> rulesToRegister) {

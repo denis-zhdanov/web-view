@@ -108,7 +108,8 @@ public class HighlighterProvider {
                     listener.onToken(tokenInfo);
                 }
                 switch (tokenType.getCategory()) {
-                    case END: --numberOfEndTokensToProvide; break;
+                    case END:
+                    case END_LOOK_AHEAD: --numberOfEndTokensToProvide; break;
                     case START: ++numberOfEndTokensToProvide; break;
                     case COMPLETE:
                 }
