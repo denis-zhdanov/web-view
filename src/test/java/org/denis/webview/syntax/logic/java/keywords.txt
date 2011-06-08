@@ -1,0 +1,22 @@
+<%KEYWORD>abstract<%>    <%KEYWORD>continue<%>    <%KEYWORD>for<%>           <%KEYWORD>new<%>          <%KEYWORD>switch<%>
+<%KEYWORD>assert<%>      <%KEYWORD>default<%>     <%KEYWORD>goto<%>          <%KEYWORD>package<%>      <%KEYWORD>synchronized<%>
+<%KEYWORD>boolean<%>     <%KEYWORD>do<%>          <%KEYWORD>if<%>            <%KEYWORD>private<%>      <%KEYWORD>this<%>
+<%KEYWORD>break<%>       <%KEYWORD>double<%>      <%KEYWORD>implements<%>    <%KEYWORD>protected<%>    <%KEYWORD>throw<%>
+<%KEYWORD>byte<%>        <%KEYWORD>else<%>        <%KEYWORD>import<%>        <%KEYWORD>public<%>       <%KEYWORD>throws<%>
+<%KEYWORD>case<%>        <%KEYWORD>enum<%>        <%KEYWORD>instanceof<%>    <%KEYWORD>return<%>       <%KEYWORD>transient<%>
+<%KEYWORD>catch<%>       <%KEYWORD>extends<%>     <%KEYWORD>int<%>           <%KEYWORD>short<%>        <%KEYWORD>try<%>
+<%KEYWORD>char<%>        <%KEYWORD>final<%>       <%KEYWORD>interface<%>     <%KEYWORD>static<%>       <%KEYWORD>void<%>
+<%KEYWORD>class<%>       <%KEYWORD>finally<%>     <%KEYWORD>long<%>          <%KEYWORD>strictfp<%>     <%KEYWORD>volatile<%>
+<%KEYWORD>const<%>       <%KEYWORD>float<%>       <%KEYWORD>native<%>        <%KEYWORD>super<%>        <%KEYWORD>while<%>
+
+not inside a string unprotected byte-word
+not keyword in string: <%STRING_LITERAL_START>"<%>public<%END>"<%>
+not in end of line comment <%SINGLE_LINE_COMMENT_START>//<%> try<%END_LOOK_AHEAD>
+<%>not in multi-line comment <%MULTI_LINE_COMMENT_START>/*<%> int <%END>*/<%>
+                          <%MULTI_LINE_COMMENT_START>/*<%>
+                              long
+                           <%END>*/<%>
+not in javadoc <%JAVADOC_START>/**<%> float <%END>*/<%>
+               <%JAVADOC_START>/**<%>
+                   double
+                <%END>*/<%>

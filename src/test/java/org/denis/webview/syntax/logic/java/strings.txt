@@ -1,0 +1,3 @@
+here are string literals: <%STRING_LITERAL_START>"<%>h<%END>"<%> <%STRING_LITERAL_START>"<%>hello<%END>"<%> <%STRING_LITERAL_START>"<%>hello, 'world'<%END>"<%>
+here is symbol literal: <%CHAR_LITERAL>'a'<%>
+here is invalid string: 'test'

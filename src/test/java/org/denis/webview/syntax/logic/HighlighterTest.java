@@ -70,7 +70,7 @@ public class HighlighterTest {
         }
         
         for (File file : testDataDir.listFiles()) {
-//            String interestedName = "javadoc-with-html-tags.txt";
+//            String interestedName = "keywords.txt";
             String interestedName = null;
             if (interestedName != null && !interestedName.equals(file.getName())) {
                 continue;
@@ -90,7 +90,14 @@ public class HighlighterTest {
             Highlighter.Listener listener = new Highlighter.Listener() {
                 @Override
                 public void onToken(TokenInfo info) {
-                    assertFalse(message, expected.isEmpty());
+                    if (info.getTokenType() == null) {
+                        return;
+                    }
+                    assertFalse(
+                            String.format("%s unexpected token: %s (%s)",
+                                    message, info, getRawText().substring(info.getStartOffset(), info.getEndOffset())),
+                            expected.isEmpty()
+                    );
                     assertEquals(message, expected.remove(0), info);
                 }
             };

@@ -18,6 +18,8 @@ public class IdeaJavaStyleScheme extends StyleSchemeImpl {
         super(Profile.IDEA);
         
         registerComments();
+        registerLiterals();
+        register(JavaTokenType.KEYWORD, new StyleRule(StyleAttribute.COLOR, "#000080"), StyleRule.BOLD);
     }
 
     private void registerComments() {
@@ -28,5 +30,12 @@ public class IdeaJavaStyleScheme extends StyleSchemeImpl {
         
         register(JavaTokenType.JAVADOC_TAG_START, StyleRule.UNDERLINE, StyleRule.BOLD);
         register(JavaTokenType.JAVADOC_HTML_TAG_START, new StyleRule(StyleAttribute.BACKGROUND_COLOR, "#e2ffe2"));
+    }
+
+    private void registerLiterals() {
+        // Strings.
+        StyleRule[] stringRules = {new StyleRule(StyleAttribute.COLOR, "#008000"), StyleRule.BOLD};
+        register(JavaTokenType.STRING_LITERAL_START, stringRules);
+        register(JavaTokenType.CHAR_LITERAL, stringRules);
     }
 }
