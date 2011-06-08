@@ -1,6 +1,6 @@
 <div id="target-source-wrapper">
-    <div style="border:1px inset;padding:2%;">
-        <div class="view"><pre id="target-source" style=height:100%;overflow:auto;background-color:white;margin:0;padding:6px;">
+    <div style="border:1px inset;background-color:white;padding:2%;">
+        <div class="view"><pre id="target-source" style=height:100%;overflow:auto;margin:0;padding:6px;">
 $highlighted
         </pre>
         </div>
