@@ -28,8 +28,8 @@ public class OutputProcessor {
     private final MarkupScheme markupScheme;
 
     public OutputProcessor(Writer writer, MarkupScheme markupScheme) {
-        this.writer = writer;
-//        this.writer = new DebugWriter(writer);
+//        this.writer = writer;
+        this.writer = new org.denis.webview.util.io.DebugWriter(writer);
         this.markupScheme = markupScheme;
     }
 
@@ -91,7 +91,7 @@ public class OutputProcessor {
             }
 
             if (replacement == null) {
-                if (end == endOffset - 1 && end > start) {
+                if (end == endOffset - 1 && endOffset > start) {
                     writer.write(data, start, endOffset - start);
                 }
                 continue;
