@@ -41,4 +41,8 @@ public class SymbolCountingReader extends FilterReader {
     public int getReadSymbolsNumber() {
         return readSymbolsNumber;
     }
+
+    public void adjustReadSymbolsNumber(int adjustment) {
+        readSymbolsNumber += adjustment;
+    }
 }

@@ -1,5 +1,7 @@
 package org.denis.webview.syntax.logic;
 
+import org.denis.webview.util.io.SymbolCountingReader;
+
 import java.io.IOException;
 import java.io.Reader;
 
@@ -19,7 +21,7 @@ public interface Highlighter {
      * @param reader    target data provider
      * @throws IOException      in case of unexpected I/O problem with the given symbol stream
      */
-    void process(Reader reader) throws IOException;
+    void process(SymbolCountingReader reader) throws IOException;
 
     /**
      * Registers given listener within the current highlighter.

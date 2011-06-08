@@ -12,10 +12,7 @@ import org.denis.webview.syntax.logic.TokenInfo;
 import org.denis.webview.syntax.output.OutputProcessor;
 import org.denis.webview.syntax.output.markup.MarkupScheme;
 import org.denis.webview.syntax.output.markup.MarkupSchemeProvider;
-import org.denis.webview.util.io.CharBufferReader;
-import org.denis.webview.util.io.HtmlEntityDecodingReader;
-import org.denis.webview.util.io.HttpParametersReader;
-import org.denis.webview.util.io.UrlDecodingReader;
+import org.denis.webview.util.io.*;
 import org.denis.webview.util.string.CharArrayCharSequence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -83,7 +80,6 @@ public class SyntaxHighlightRenderable implements Renderable {
     private Reader reader;
     private boolean newParamStarted;
 
-
     @Override
     public boolean render(InternalContextAdapter context, Writer writer) throws IllegalArgumentException, IOException {
         // Parse highlighting parameters.
@@ -97,13 +93,15 @@ public class SyntaxHighlightRenderable implements Renderable {
 
         // Setup rolling input symbol stream.
         CharBufferListener readerListener = new CharBufferListener(outputProcessor);
-        CharBufferReader charBufferReader = new CharBufferReader(readerData1.buffer, readerListener);
+        CharBufferReader charBufferReader = new CharBufferReader(activeData.buffer, readerListener);
         readerListener.setReader(charBufferReader);
 
         // Parse tokens.
         Highlighter highlighter = highlighterProvider.getHighlighter((SourceType) params.get(SourceType.class));
         highlighter.addListener(new HighlighterListener(outputProcessor));
-        highlighter.process(charBufferReader);
+        SymbolCountingReader symbolCountingReader = new SymbolCountingReader(charBufferReader);
+        symbolCountingReader.adjustReadSymbolsNumber(activeData.size());
+        highlighter.process(symbolCountingReader);
 
         return true;
     }
@@ -134,7 +132,7 @@ public class SyntaxHighlightRenderable implements Renderable {
     @SuppressWarnings({"unchecked", "EqualsBetweenInconvertibleTypes"})
     private Map<Class<?>, Object> parseParams() throws IOException, IllegalArgumentException {
         Map<Class<?>, Object> params = getParamsHolder();
-        CharBuffer readerBuffer = readerData1.buffer;
+        CharBuffer readerBuffer = activeData.buffer;
         readerBuffer.clear();
         paramsBuffer.clear();
         Target target = Target.KEY;
@@ -149,6 +147,11 @@ public class SyntaxHighlightRenderable implements Renderable {
                         if (c == '=') {
                             mapKey.updateState(paramsBuffer.array(), 0, paramsBuffer.position());
                             if (mapKey.equals(SOURCE_PARAMETER_NAME)) {
+                                activeData.bufferStart = readerBuffer.position();
+                                activeData.bufferEnd = readerBuffer.limit();
+                                activeData.bufferShift = activeData.bufferStart;
+                                activeData.clientShift = 0;
+                                activeData.readSymbols = readerBuffer.remaining();
                                 return params;
                             }
                             currentKey = REQUEST_PARAMETER_NAMES.get(mapKey);
@@ -237,6 +240,7 @@ public class SyntaxHighlightRenderable implements Renderable {
             }
             
             newData.bufferStart = 0;
+            newData.bufferShift = 0;
             newData.bufferEnd = newData.readSymbols;
             newData.clientShift = currentData.clientShift + currentData.readSymbols;
             charBufferReader.setBuffer(newData.buffer);
@@ -264,8 +268,8 @@ public class SyntaxHighlightRenderable implements Renderable {
                 return;
             }
 
-            int tokenStartOffsetWithinBuffer = info.getStartOffset() - data.clientShift;
-            int tokenEndOffsetWithinBuffer = info.getEndOffset() - data.clientShift;
+            int tokenStartOffsetWithinBuffer = info.getStartOffset() - data.clientShift + data.bufferShift;
+            int tokenEndOffsetWithinBuffer = info.getEndOffset() - data.clientShift + data.bufferShift;
 
             // Discovered token is located before the data from the given buffer.
             if (tokenEndOffsetWithinBuffer < 0) {
@@ -294,7 +298,7 @@ public class SyntaxHighlightRenderable implements Renderable {
             
             // Discovered token is completely located at the current buffer.
             if (tokenEndOffsetWithinBuffer <= data.bufferEnd) {
-                outputProcessor.write(data.buffer.array(), data.bufferStart, tokenStartOffsetWithinBuffer, info);
+                outputProcessor.write(data.buffer.array(), data.bufferStart, tokenEndOffsetWithinBuffer, info);
                 data.bufferStart = tokenEndOffsetWithinBuffer;
                 return;
             }
@@ -347,6 +351,9 @@ public class SyntaxHighlightRenderable implements Renderable {
         /** Offset beyond the last symbol of the current buffer that is not written to the output yet. */
         public int bufferEnd;
 
+        /** Value that indicates initial useful data offset. */
+        public int bufferShift;
+
         /**
          * Value to add to the {@link #bufferStart} in order to get offset for the whole client input.
          */
@@ -357,7 +364,7 @@ public class SyntaxHighlightRenderable implements Renderable {
         public int readSymbols;
 
         public boolean isEmpty() {
-            return bufferEnd > bufferStart;
+            return bufferEnd <= bufferStart;
         }
 
         public int size() {

@@ -89,18 +89,18 @@ public class HighlighterProvider {
 
 
         @Override
-        public void process(Reader reader) throws IOException {
-            SymbolCountingReader symbolCountingReader = new SymbolCountingReader(reader);
+        public void process(SymbolCountingReader reader) throws IOException {
             Lexer lexer;
             try {
                 Constructor<? extends Lexer> constructor = lexerClass.getConstructor(Reader.class);
                 lexer = constructor.newInstance(reader);
             } catch (Exception e) {
                 LOG.error(e);
-                new HighlighterImpl(EmptyLexer.class).process(symbolCountingReader);
+                new HighlighterImpl(EmptyLexer.class).process(reader);
                 return;
             }
             int numberOfEndTokensToProvide = 0;
+            int lastTokenEndOffset = 0;
             for (TokenType tokenType = lexer.advance(); tokenType != null; tokenType = lexer.advance()) {
                 TokenInfo tokenInfo = new TokenInfo(tokenType, lexer.getStartOffset(), lexer.getEndOffset());
                 for (Listener listener : listeners) {
@@ -116,13 +116,18 @@ public class HighlighterProvider {
             // There is a possible case that particular token of category 'end' is not found (e.g. we discovered
             // end-of-line comment start but the input doesn't ends with line feed symbol). We want to provide
             // artificial 'end tokens' then.
+            int totalReadSymbolsNumber = reader.getReadSymbolsNumber();
             if (numberOfEndTokensToProvide > 0) {
-                int offset = symbolCountingReader.getReadSymbolsNumber();
-                TokenInfo tokenInfo = new TokenInfo(TokenType.END_TOKEN, offset, offset);
+                TokenInfo tokenInfo = new TokenInfo(TokenType.END_TOKEN, totalReadSymbolsNumber, totalReadSymbolsNumber);
                 for (Listener listener : listeners) {
                     for (int i = numberOfEndTokensToProvide; i > 0; i--) {
                         listener.onToken(tokenInfo);
                     }
+                }
+            } else if (totalReadSymbolsNumber > lastTokenEndOffset) {
+                TokenInfo tokenInfo = new TokenInfo(null, lastTokenEndOffset, totalReadSymbolsNumber);
+                for (Listener listener : listeners) {
+                    listener.onToken(tokenInfo);
                 }
             }
         }
