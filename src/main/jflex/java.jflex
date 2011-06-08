@@ -35,35 +35,35 @@ AnySymbol      = .|{LineTerminator}
     "//"                    { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START; }
     "/**"                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return JAVADOC_START; }
     "/*"                    { yybegin(MULTI_LINE_COMMENT); return MULTI_LINE_COMMENT_START; }
-    {AnySymbol}             {}
+    {AnySymbol}             { }
 }                           
                             
 <END_LINE_COMMENT> {        
     {LineTerminator}        { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
-    .                       {}
+    .                       { }
 }                           
                             
 <MULTI_LINE_COMMENT> {      
     "*/"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {AnySymbol}             {}
+    {AnySymbol}             { }
 }                           
                             
 <DOC_TAG_AWARE_COMMENT>     {
     {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); }
-    [^ *@]                  { yybegin(DOC_TAG_UNAWARE_COMMENT); }
+    [^ *@{]                 { yybegin(DOC_TAG_UNAWARE_COMMENT); }
     "@"/[:jletterdigit:]    { yybegin(DOC_TAG); return JAVADOC_TAG_START; }
     "*/"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {AnySymbol}             {}
+    {AnySymbol}             { }
 }
 
 <DOC_TAG_UNAWARE_COMMENT> {
-    {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); }
+    "{"|{LineTerminator}    { yybegin(DOC_TAG_AWARE_COMMENT); }
     "*/"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {AnySymbol}             {}
+    {AnySymbol}             { }
 }                           
                             
 <DOC_TAG> {                 
     {LineTerminator}        { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
-    " "                     { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
-    {AnySymbol}             {}
+    [:jletterdigit:]        { }
+    {AnySymbol}             { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
 }
