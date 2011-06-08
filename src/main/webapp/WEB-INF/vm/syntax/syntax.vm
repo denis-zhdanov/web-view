@@ -1,4 +1,10 @@
 <div id="target-source-wrapper">
-    <div id="clipboard-source">$highlighted</div>
-    <pre id="target-source"></pre>
+    <div style="border:1px inset;padding:2%;">
+        <div class="view"><pre id="target-source" style=height:100%;overflow:auto;background-color:white;margin:0;padding:6px;">
+$highlighted
+        </pre>
+        </div>
+    </div>
+    <div id="clipboard-source">
+    </div>
 </div>
