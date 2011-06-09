@@ -74,6 +74,7 @@ public class SyntaxHighlightRenderable implements Renderable {
 
     /** Buffer used during highlighting parameters parsing. */
     private final CharBuffer paramsBuffer = CharBuffer.allocate(32);
+    private final Map<Class<?>, Object> params = getParamsHolder();
 
     private MarkupSchemeProvider markupSchemeProvider;
     private HighlighterProvider highlighterProvider;
@@ -81,9 +82,6 @@ public class SyntaxHighlightRenderable implements Renderable {
 
     @Override
     public boolean render(InternalContextAdapter context, Writer writer) throws IllegalArgumentException, IOException {
-        // Parse highlighting parameters.
-        Map<Class<?>, Object> params = parseParams();
-
         // Setup output processor.
         MarkupScheme markupScheme = markupSchemeProvider.getScheme(
             (MarkupType) params.get(MarkupType.class), (Profile) params.get(Profile.class)
@@ -105,11 +103,12 @@ public class SyntaxHighlightRenderable implements Renderable {
         return true;
     }
 
-    public void setReader(Reader reader) {
+    public void prepare(Reader reader, Map<String, Object> paramsHolder) throws IOException {
 //        this.reader = new HtmlEntityDecodingReader(new UrlDecodingReader(new HttpParametersReader(
         this.reader = new UrlDecodingReader(reader);
+        parseParams(paramsHolder);
     }
-
+    
     @Autowired
     public void setMarkupSchemeProvider(MarkupSchemeProvider markupSchemeProvider) {
         this.markupSchemeProvider = markupSchemeProvider;
@@ -122,13 +121,15 @@ public class SyntaxHighlightRenderable implements Renderable {
 
     private enum Target { KEY, VALUE }
     @SuppressWarnings({"unchecked", "EqualsBetweenInconvertibleTypes"})
-    private Map<Class<?>, Object> parseParams() throws IOException, IllegalArgumentException {
-        Map<Class<?>, Object> params = getParamsHolder();
+    private Map<Class<?>, Object> parseParams(Map<String, Object> paramsHolder)
+            throws IOException, IllegalArgumentException
+    {
         CharBuffer readerBuffer = activeData.buffer;
         readerBuffer.clear();
         paramsBuffer.clear();
         Target target = Target.KEY;
         Class<?> currentKey = null;
+        String currentParamName = null;
         CharArrayCharSequence mapKey = new CharArrayCharSequence();
         while (reader.read(readerBuffer) >= 0) {
             readerBuffer.flip();
@@ -147,6 +148,7 @@ public class SyntaxHighlightRenderable implements Renderable {
                                 return params;
                             }
                             currentKey = REQUEST_PARAMETER_NAMES.get(mapKey);
+                            currentParamName = mapKey.toString().intern();
                             target = Target.VALUE;
                             paramsBuffer.clear();
                         } else {
@@ -160,12 +162,13 @@ public class SyntaxHighlightRenderable implements Renderable {
                         }
                         if (currentKey != null) {
                             String valueAsString
-                                    = new String(paramsBuffer.array(), 0, paramsBuffer.position()).toUpperCase();
+                                    = new String(paramsBuffer.array(), 0, paramsBuffer.position()).intern();
                             Map<String, Object> map = ENUM_MEMBERS.get(currentKey);
-                            Object value = map.get(valueAsString);
+                            Object value = map.get(valueAsString.toUpperCase());
                             if (value != null) {
                                 params.put(currentKey, value);
                             }
+                            paramsHolder.put(currentParamName, valueAsString);
                         }
                         paramsBuffer.clear();
                         target = Target.KEY;

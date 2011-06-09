@@ -1,15 +1,25 @@
 #set($options = [
-    {"paramName": "profile", "values": ["idea", "eclipse", "netbeans"], "defaultValue": "idea"},
-    {"paramName": "language", "values": ["xml", "java"], "defaultValue": "java"}
+    {"paramName": "profile", "values": ["idea", "eclipse", "netbeans"]},
+    {"paramName": "language", "values": ["xml", "java"]}
 ])
+
+##Default settings
+#set($settings = {"profile": "idea", "language": "java"})
+
+#if ($currentSettings)
+    #foreach($entry in $currentSettings.entrySet())
+        #set($dummy = $settings.put($entry.key, $entry.value))
+    #end
+#end
 
 <form action="/content/syntax/highlight.html" method="post">
     <div id="source-options">
         #foreach($optionData in $options)
             <div class="horizontal-option-wrapper">
-                <input type="hidden" name="${optionData.paramName}" value="${optionData.defaultValue}"/>
+                #set($currentValue = $settings.get(${optionData.paramName}))
+                <input type="hidden" name="${optionData.paramName}" value="$currentValue"/>
                 <div class="horizontal-option-current">
-                    <img src="/pic/${optionData.defaultValue}.png" alt="${optionData.defaultValue}"/>
+                    <img src="/pic/${currentValue}.png" alt="$currentValue"/>
                     <img src="/pic/arrow-right.png" onclick="onOptionArrowClick(this);"/>
 
                 </div>

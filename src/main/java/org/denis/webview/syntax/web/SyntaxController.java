@@ -1,6 +1,5 @@
 package org.denis.webview.syntax.web;
 
-import org.apache.velocity.runtime.Renderable;
 import org.denis.webview.view.CommonViewHelper;
 import org.denis.webview.view.ViewType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,6 +23,7 @@ public class SyntaxController {
 
     private static final String HIGHLIGHT_VIEW_NAME = "syntax";
     private static final String HIGHLIGHTED_VAR_NAME = "highlighted";
+    private static final String CURRENT_SETTINGS_VAR_NAME = "currentSettings";
 
     private final CommonViewHelper viewHelper;
     private SyntaxHighlightRenderable renderable;
@@ -35,9 +35,11 @@ public class SyntaxController {
 
     @RequestMapping("/syntax/**")
     public ModelAndView handle(Reader reader) throws IOException {
-        renderable.setReader(reader);
-        Map<String, Renderable> parameters
-            = Collections.<String, Renderable>singletonMap(HIGHLIGHTED_VAR_NAME, renderable);
+        Map<String, Object> settings = new HashMap<String, Object>();
+        renderable.prepare(reader, settings);
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put(HIGHLIGHTED_VAR_NAME, renderable);
+        parameters.put(CURRENT_SETTINGS_VAR_NAME, settings);
         return viewHelper.map(HIGHLIGHT_VIEW_NAME, ViewType.SYNTAX, parameters);
     }
 

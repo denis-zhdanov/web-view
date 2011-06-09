@@ -66,4 +66,9 @@ public class CharArrayCharSequence extends AbstractCharSequence {
     public char charAt(int index) {
         return data[start + index];
     }
+
+    @Override
+    public String toString() {
+        return new String(data, start, end - start);
+    }
 }
