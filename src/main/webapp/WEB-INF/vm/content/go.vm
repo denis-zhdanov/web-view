@@ -1,31 +1,3 @@
-#set($options = [
-    {"paramName": "profile", "values": ["idea", "eclipse", "netbeans"], "defaultValue": "idea"},
-    {"paramName": "language", "values": ["xml", "java"], "defaultValue": "java"}
-])
-
-<form action="/content/syntax/highlight.html" method="post">
-    <div id="source-options">
-        #foreach($optionData in $options)
-            <div class="horizontal-option-wrapper">
-                <input type="hidden" name="${optionData.paramName}" value="${optionData.defaultValue}"/>
-                <div class="horizontal-option-current">
-                    <img src="/pic/${optionData.defaultValue}.png" alt="idea"/>
-                    <img src="/pic/arrow-right.png" onclick="onOptionArrowClick(this);"/>
-
-                </div>
-                <div class="all-options-wrapper">
-                    <div class="horizontal-option-all">
-                        #foreach($option in $optionData.values)
-                            <img src="/pic/${option}.png" alt="$option" onclick="onOptionClick(this);"/>
-                        #end
-                    </div>
-                </div>
-            </div>
-        #end
-        <input type="image" src="/pic/generate.png" alt="Generate">
-    </div>
-    <div id="target-source-wrapper">
-        <textarea id="target-source" name="source"></textarea>
-    </div>
-</form>
-
+#set($targetSourcePrefix = '<textarea id="target-source" name="source">')
+#set($targetSourceSuffix = '</textarea>')
+#parse("syntax/syntax-template.vm")

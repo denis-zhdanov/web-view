@@ -1,10 +1,12 @@
-<div id="target-source-wrapper">
-    <div style="border:1px inset;background-color:white;padding:2%;">
-        <div class="view"><pre id="target-source" style=height:100%;overflow:auto;margin:0;padding:6px;">
-$highlighted
-        </pre>
+#set($targetSourcePrefix = '
+    <div style="border:1px inset;background-color:white;padding:2%;overflow:auto">
+        <div class="view">
+            <pre id="target-source" style=height:100%;overflow:auto;margin:0;padding:6px;>
+')
+#set($targetSourceSuffix = '
+            </pre>
         </div>
     </div>
-    <div id="clipboard-source">
-    </div>
-</div>
+')
+
+#parse("syntax/syntax-template.vm")
