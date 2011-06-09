@@ -1,11 +1,10 @@
 #set($targetSourcePrefix = '
-    <div style="border:1px inset;background-color:white;padding:2%;overflow:auto">
-        <div class="view">
-            <pre id="target-source" style=height:100%;overflow:auto;margin:0;padding:6px;>
+    <div id="content-border-box">
+        <pre id="highlighted-source">
 ')
 #set($targetSourceSuffix = '
-            </pre>
-        </div>
+        </pre>
+        <input type="hidden" name="source" value="internal error"/>
     </div>
 ')
 

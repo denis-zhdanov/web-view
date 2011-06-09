@@ -2,6 +2,21 @@ form {
     height: 97%;
 }
 
+form textarea {
+    width: 100%;
+    height: 100%;
+    padding: 1em;
+}
+
+#content-border-box {
+    border:1px inset;
+    background-color:white;
+    overflow:auto;
+    width: 100%;
+    height: 100%;
+    float: left;
+}
+
 #target-source-wrapper {
     float: left;
     margin-left: 1em;
@@ -9,9 +24,9 @@ form {
     height: 100%;
 }
 
-#target-source {
-    width: 100%;
-    height: 100%;
+#highlighted-source {
+    margin: 0;
+    padding: 0 1em;
 }
 
 #source-options {
