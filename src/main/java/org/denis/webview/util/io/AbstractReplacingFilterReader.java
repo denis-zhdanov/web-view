@@ -117,7 +117,7 @@ public abstract class AbstractReplacingFilterReader extends FilterReader {
         int lengthToUse = len - copiedCharactersNumber;
         initInternalBuffer(Math.max(len, maxReplacementSize));
         int read = super.read(
-            internalBuffer, internalBufferStartOffset, internalBuffer.length - internalBufferEndOffset
+            internalBuffer, internalBufferEndOffset, internalBuffer.length - internalBufferEndOffset
         );
         if (read < 0) {
             if (copiedCharactersNumber > 0) {

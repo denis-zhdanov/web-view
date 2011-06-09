@@ -56,4 +56,18 @@ public class UrlDecodingReaderTest extends AbstractReplacingFilterReaderTest<Url
             "ide=русское слово&language=java"
         );
     }
+
+    @Test
+    public void cyclingNotParsedData() throws Exception {
+        int bufferSize = AbstractReplacingFilterReader.DEFAULT_INTERNAL_BUFFER_SIZE;
+        StringBuilder input = new StringBuilder();
+        StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < bufferSize - 2; ++i) {
+            input.append('x');
+            expected.append('x');
+        }
+        input.append("%3D123");
+        expected.append("=123");
+        doTest(input.toString(), expected.toString());
+    }
 }
