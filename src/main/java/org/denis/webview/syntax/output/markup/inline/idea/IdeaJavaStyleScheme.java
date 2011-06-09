@@ -19,7 +19,7 @@ public class IdeaJavaStyleScheme extends StyleSchemeImpl {
         
         registerComments();
         registerLiterals();
-        register(JavaTokenType.KEYWORD, new StyleRule(StyleAttribute.COLOR, "#000080"), StyleRule.BOLD);
+        registerOthers();
     }
 
     private void registerComments() {
@@ -37,5 +37,9 @@ public class IdeaJavaStyleScheme extends StyleSchemeImpl {
         StyleRule[] stringRules = {new StyleRule(StyleAttribute.COLOR, "#008000"), StyleRule.BOLD};
         register(JavaTokenType.STRING_LITERAL_START, stringRules);
         register(JavaTokenType.CHAR_LITERAL, stringRules);
+    }
+
+    private void registerOthers() {
+        register(JavaTokenType.KEYWORD, new StyleRule(StyleAttribute.COLOR, "#000080"), StyleRule.BOLD);
     }
 }
