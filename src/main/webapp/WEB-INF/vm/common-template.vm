@@ -4,10 +4,11 @@
     <head>
         <link rel="stylesheet" type="text/css" href="/css/common.css"/>
         <link rel="stylesheet" type="text/css" href="/css/syntax.css"/>
+        <script type="text/javascript" src="/js/subsequent-highlight.js"></script>
         <script type="text/javascript" src="/js/horizontal-option.js"></script>
         <title></title>
     </head>
-    <body>
+    <body onload="prepareSubsequentHighlight()">
         <div id="menu">
             <ul>
                 #set($tabs = {"go": "Go!", "doc": "Documentation", "feedback": "Feedback", "about": "About"})

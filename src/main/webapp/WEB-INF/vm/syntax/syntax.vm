@@ -4,7 +4,7 @@
 ')
 #set($targetSourceSuffix = '
         </pre>
-        <input type="hidden" name="source" value="internal error"/>
+        <input type="hidden" id="raw-source" name="source" value="internal error"/>
     </div>
 ')
 

@@ -93,6 +93,7 @@ public class HighlighterProvider {
             Lexer lexer;
             try {
                 Constructor<? extends Lexer> constructor = lexerClass.getConstructor(Reader.class);
+//                lexer = constructor.newInstance(new org.denis.webview.util.io.DebugReader(reader));
                 lexer = constructor.newInstance(reader);
             } catch (Exception e) {
                 LOG.error(e);

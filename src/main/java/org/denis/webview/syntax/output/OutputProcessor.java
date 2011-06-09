@@ -65,6 +65,7 @@ public class OutputProcessor {
         if (tokenType.getCategory() == TokenType.Category.END_LOOK_AHEAD) {
             writer.write(END_TOKEN_MARK);
             writeEscaped(data, start, end);
+            return;
         }
 
         char[] markup = markupScheme.getMarkup(tokenType);
