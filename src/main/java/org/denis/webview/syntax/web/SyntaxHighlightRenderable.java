@@ -78,7 +78,6 @@ public class SyntaxHighlightRenderable implements Renderable {
     private MarkupSchemeProvider markupSchemeProvider;
     private HighlighterProvider highlighterProvider;
     private Reader reader;
-    private boolean newParamStarted;
 
     @Override
     public boolean render(InternalContextAdapter context, Writer writer) throws IllegalArgumentException, IOException {
@@ -108,15 +107,7 @@ public class SyntaxHighlightRenderable implements Renderable {
 
     public void setReader(Reader reader) {
 //        this.reader = new HtmlEntityDecodingReader(new UrlDecodingReader(new HttpParametersReader(
-        this.reader = new UrlDecodingReader(new HttpParametersReader(
-            reader,
-            new Runnable() {
-                @Override
-                public void run() {
-                    newParamStarted = true;
-                }
-            }
-        ));
+        this.reader = new UrlDecodingReader(reader);
     }
 
     @Autowired
@@ -163,24 +154,25 @@ public class SyntaxHighlightRenderable implements Renderable {
                         }
                         break;
                     case VALUE:
-                        paramsBuffer.put(c);
+                        if (c != '&') {
+                            paramsBuffer.put(c);
+                            break;
+                        }
+                        if (currentKey != null) {
+                            String valueAsString
+                                    = new String(paramsBuffer.array(), 0, paramsBuffer.position()).toUpperCase();
+                            Map<String, Object> map = ENUM_MEMBERS.get(currentKey);
+                            Object value = map.get(valueAsString);
+                            if (value != null) {
+                                params.put(currentKey, value);
+                            }
+                        }
+                        paramsBuffer.clear();
+                        target = Target.KEY;
+                        
                 }
             }
             readerBuffer.clear();
-            if (newParamStarted) {
-                newParamStarted = false;
-                if (currentKey != null) {
-                    String valueAsString = new String(paramsBuffer.array(), 0, paramsBuffer.position()).toUpperCase();
-                    Map<String, Object> map = ENUM_MEMBERS.get(currentKey);
-                    Object value = map.get(valueAsString);
-                    if (value != null) {
-                        params.put(currentKey, value);
-                    }
-                }
-
-                paramsBuffer.clear();
-                target = Target.KEY;
-            }
         }
         return params;
     }
