@@ -98,7 +98,13 @@ public class HighlighterTest {
                                     message, info, getRawText().substring(info.getStartOffset(), info.getEndOffset())),
                             expected.isEmpty()
                     );
-                    assertEquals(message, expected.remove(0), info);
+                    final TokenInfo expectedInfo = expected.remove(0);
+                    final String currentMessage = String.format("%s: expected '%s' but was '%s'",
+                            message,
+                            getRawText().substring(expectedInfo.getStartOffset(), expectedInfo.getEndOffset()),
+                            getRawText().substring(info.getStartOffset(), info.getEndOffset())
+                    );
+                    assertEquals(currentMessage, expectedInfo, info);
                 }
             };
             assertTrue(message, highlighter.addListener(listener));

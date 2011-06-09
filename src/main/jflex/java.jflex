@@ -8,33 +8,36 @@ import org.denis.webview.syntax.logic.*;
 %unicode
 %implements Lexer
 %public
-%line
-%column
+%char
 %function advance
 %type TokenType
 
 %{
 @Override
 public int getStartOffset() {
-    return zzStartRead;
+    return yychar;
 }
 
 @Override
 public int getEndOffset() {
-    return zzMarkedPos;
+    return yychar + zzMarkedPos - zzStartRead;
 }
 
-private boolean isWhiteSpace(int offset) {
-    char c = zzBuffer[offset];
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+private boolean isValidSymbolBeforeKeyword() {
+    if (zzStartRead <= 0) {
+        return true;
+    }
+    char c = zzBuffer[zzStartRead - 1];
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '(';
 }
+
 %}
 
 LF        = \r|\n|\r\n
 WS        = " "|\t
 AnySymbol = .|{LF}
 
-KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"package"|"synchronized"|"boolean"|"do"|"if"|"private"|"this"|"break"|"double"|"implements"|"protected"|"throw"|"byte"|"else"|"import"|"public"|"throws"|"case"|"enum"|"instanceof"|"return"|"transient"|"catch"|"extends"|"int"|"short"|"try"|"char"|"final"|"interface"|"static"|"void"|"class"|"finally"|"long"|"strictfp"|"volatile"|"const"|"float"|"native"|"super"|"while"
+KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"package"|"synchronized"|"boolean"|"do"|"if"|"private"|"this"|"break"|"double"|"implements"|"protected"|"throw"|"byte"|"else"|"import"|"public"|"throws"|"case"|"enum"|"instanceof"|"return"|"transient"|"catch"|"extends"|"int"|"short"|"try"|"char"|"final"|"interface"|"static"|"void"|"class"|"finally"|"long"|"strictfp"|"volatile"|"const"|"float"|"native"|"super"|"while"|"null"
 
 /* comments */
 %state END_LINE_COMMENT MULTI_LINE_COMMENT DOC_TAG_AWARE_COMMENT DOC_TAG_UNAWARE_COMMENT DOC_TAG DOC_HTML_TAG
@@ -49,8 +52,8 @@ KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"
     "/*"                  { yybegin(MULTI_LINE_COMMENT); return MULTI_LINE_COMMENT_START; }
     \"                    { yybegin(STRING); return STRING_LITERAL_START; }
     '.'                   { return CHAR_LITERAL; }
-    {KEYWORD}/{WS}|{LF}   { 
-                            if (getStartOffset() == 0 || isWhiteSpace(getStartOffset() - 1)) {
+    {KEYWORD}/{WS}|{LF}|[(;).\[]   { 
+                            if (isValidSymbolBeforeKeyword()) {
                                 return KEYWORD;
                             }
                           }

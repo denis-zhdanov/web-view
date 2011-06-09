@@ -9,6 +9,12 @@
 <%KEYWORD>class<%>       <%KEYWORD>finally<%>     <%KEYWORD>long<%>          <%KEYWORD>strictfp<%>     <%KEYWORD>volatile<%>
 <%KEYWORD>const<%>       <%KEYWORD>float<%>       <%KEYWORD>native<%>        <%KEYWORD>super<%>        <%KEYWORD>while<%>
 
+<%KEYWORD>this<%>(1)
+<%KEYWORD>super<%>.call()
+call(<%KEYWORD>char<%>[]);
+(i == <%KEYWORD>null<%>)
+<%KEYWORD>break<%>;
+
 not inside a string unprotected byte-word
 not keyword in string: <%STRING_LITERAL_START>"<%>public<%END>"<%>
 not in end of line comment <%SINGLE_LINE_COMMENT_START>//<%> try<%END_LOOK_AHEAD>
