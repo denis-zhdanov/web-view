@@ -2,6 +2,7 @@ package org.denis.webview.syntax.output.markup;
 
 import org.denis.webview.config.MarkupType;
 import org.denis.webview.config.Profile;
+import org.denis.webview.settings.Settings;
 import org.denis.webview.syntax.logic.TokenType;
 import org.denis.webview.syntax.output.markup.inline.InlineStyleMarkupScheme;
 import org.denis.webview.syntax.output.markup.inline.StyleScheme;
@@ -27,15 +28,20 @@ public class MarkupSchemeProvider {
      */
     private final Map<Tuple, MarkupScheme> schemes = new ConcurrentHashMap<Tuple, MarkupScheme>();
 
+    private Settings settings;
+    
     /**
-     * Allows to retrieve markup scheme for the given markup type and profile.
+     * Allows to retrieve markup scheme to use.
      *
-     * @param markupType    target markup type. Is expected to be not <code>null</code>
-     * @param profile       target profile. Is expected to be not <code>null</code>
-     * @return              markup scheme for the given settings if any is registered; <code>null</code> otherwise
+     * @return  markup scheme for the current settings if any is registered; <code>null</code> otherwise
      */
-    public MarkupScheme getScheme(MarkupType markupType, Profile profile) {
-        return schemes.get(new Tuple(markupType, profile));
+    public MarkupScheme getScheme() {
+        return schemes.get(new Tuple(settings.getMarkupType(), settings.getProfile()));
+    }
+
+    @Autowired
+    public void setSettings(Settings settings) {
+        this.settings = settings;
     }
 
     @Autowired

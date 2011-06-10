@@ -1,31 +1,16 @@
-#set($options = [
-    {"paramName": "profile", "values": ["idea", "eclipse", "netbeans"]},
-    {"paramName": "language", "values": ["xml", "java"]}
-])
-
-##Default settings
-#set($settings = {"profile": "idea", "language": "java"})
-
-#if ($currentSettings)
-    #foreach($entry in $currentSettings.entrySet())
-        #set($dummy = $settings.put($entry.key, $entry.value))
-    #end
-#end
-
 <form action="/content/syntax/highlight.html" method="post">
     <div id="source-options">
-        #foreach($optionData in $options)
+        #foreach($entry in $settings.get("current").entrySet())
             <div class="horizontal-option-wrapper">
-                #set($currentValue = $settings.get(${optionData.paramName}))
-                <input type="hidden" name="${optionData.paramName}" value="$currentValue"/>
+                <input type="hidden" name="${entry.Key}" value="${entry.Value}"/>
                 <div class="horizontal-option-current">
-                    <img src="/pic/${currentValue}.png" alt="$currentValue"/>
+                    <img src="/pic/${entry.Value}.png" alt="${entry.Value}"/>
                     <img src="/pic/arrow-right.png" onclick="onOptionArrowClick(this);"/>
 
                 </div>
                 <div class="all-options-wrapper">
                     <div class="horizontal-option-all">
-                        #foreach($option in $optionData.values)
+                        #foreach($option in ${entry.get("all").get(${entry.Value})})
                             <img src="/pic/${option}.png" alt="$option" onclick="onOptionClick(this);"/>
                         #end
                     </div>

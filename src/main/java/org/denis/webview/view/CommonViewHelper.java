@@ -1,6 +1,7 @@
 package org.denis.webview.view;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.denis.webview.settings.Settings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -10,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Utility class that encapsulates the logic of mapping view name from incoming request to
@@ -24,10 +24,17 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 public class CommonViewHelper {
 
+    /** Name of the basic template name to use, i.e. the main 'skeleton' page data. */
+    private static final String BASE_TEMPLATE_NAME = "common-template";
+    /** Name of the rendering context variable that holds settings info. */
+    private static final String SETTINGS_VAR_NAME = "settings";
+    //TODO den add doc
+    private static final String INTERNAL_CONTENT_VAR_NAME = "content";
+    
     private final ConcurrentMap<ViewType, String> viewTypesTemplates = new ConcurrentHashMap<ViewType, String>();
-    private final AtomicReference<String> baseTemplateName = new AtomicReference<String>();
-    private final AtomicReference<String> internalContentVarName = new AtomicReference<String>();
 
+    private Settings settings;
+    
     public ModelAndView map(String viewName, ViewType viewType) {
         return map(viewName, viewType, Collections.<String, String>emptyMap());
     }
@@ -36,8 +43,9 @@ public class CommonViewHelper {
     public ModelAndView map(String viewName, ViewType viewType, Map<String, ?> parameters) {
         String contentPath = String.format(viewTypesTemplates.get(viewType), viewName);
         Map<String, Object> parametersToUse = new HashMap<String, Object>(parameters);
-        parametersToUse.put(internalContentVarName.get(), contentPath);
-        return new ModelAndView(baseTemplateName.get(), parametersToUse);
+        parametersToUse.put(INTERNAL_CONTENT_VAR_NAME, contentPath);
+        parametersToUse.put(SETTINGS_VAR_NAME, settings.getRendererSettings());
+        return new ModelAndView(BASE_TEMPLATE_NAME, parametersToUse);
     }
 
     @Resource(name = "vewTypesTemplates")
@@ -45,15 +53,8 @@ public class CommonViewHelper {
         viewTypesTemplates.putAll(templates);
     }
 
-    //TODO den add doc
-    @Value("#{webContent.baseTemplateName}")
-    public void setBaseTemplateName(String name) {
-        baseTemplateName.set(name);
-    }    
-
-    //TODO den add doc
-    @Value("#{webContent.internalContentVarName}")
-    public void setInternalContentVarName(String name) {
-        internalContentVarName.set(name);
+    @Autowired
+    public void setSettings(Settings settings) {
+        this.settings = settings;
     }
 }

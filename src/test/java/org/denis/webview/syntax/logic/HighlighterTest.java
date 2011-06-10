@@ -2,6 +2,7 @@ package org.denis.webview.syntax.logic;
 
 import org.apache.log4j.Logger;
 import org.denis.webview.config.SourceType;
+import org.denis.webview.settings.Settings;
 import org.denis.webview.syntax.logic.java.JavaTokenType;
 import org.denis.webview.util.io.SymbolCountingReader;
 import org.junit.Test;
@@ -48,8 +49,11 @@ public class HighlighterTest {
     public void suit() throws IOException {
         HighlighterProvider highlighterProvider = new HighlighterProvider();
         highlighterProvider.init();
+        Settings settings = new Settings();
+        highlighterProvider.setSettings(settings);
         for (SourceType sourceType : SourceType.values()) {
-            doTest(sourceType, highlighterProvider.getHighlighter(sourceType));
+            settings.setSourceType(sourceType);
+            doTest(sourceType, highlighterProvider.getHighlighter());
         }
     }
 

@@ -2,7 +2,9 @@ package org.denis.webview.syntax.logic;
 
 import org.apache.log4j.Logger;
 import org.denis.webview.config.SourceType;
+import org.denis.webview.settings.Settings;
 import org.denis.webview.util.io.SymbolCountingReader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -29,8 +31,15 @@ public class HighlighterProvider {
     private final ConcurrentMap<SourceType, Class<? extends Lexer>> highlighters
             = new ConcurrentHashMap<SourceType, Class<? extends Lexer>>();
 
-    public Highlighter getHighlighter(SourceType sourceType) {
-        return new HighlighterImpl(highlighters.get(sourceType));
+    private Settings settings;
+    
+    public Highlighter getHighlighter() {
+        return new HighlighterImpl(highlighters.get(settings.getSourceType()));
+    }
+
+    @Autowired
+    public void setSettings(Settings settings) {
+        this.settings = settings;
     }
 
     @SuppressWarnings("unchecked")

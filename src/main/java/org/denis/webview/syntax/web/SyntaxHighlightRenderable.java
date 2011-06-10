@@ -3,17 +3,16 @@ package org.denis.webview.syntax.web;
 import org.apache.log4j.Logger;
 import org.apache.velocity.context.InternalContextAdapter;
 import org.apache.velocity.runtime.Renderable;
-import org.denis.webview.config.MarkupType;
-import org.denis.webview.config.Profile;
-import org.denis.webview.config.SourceType;
+import org.denis.webview.settings.Settings;
 import org.denis.webview.syntax.logic.Highlighter;
 import org.denis.webview.syntax.logic.HighlighterProvider;
 import org.denis.webview.syntax.logic.TokenInfo;
 import org.denis.webview.syntax.output.OutputProcessor;
 import org.denis.webview.syntax.output.markup.MarkupScheme;
 import org.denis.webview.syntax.output.markup.MarkupSchemeProvider;
-import org.denis.webview.util.io.*;
-import org.denis.webview.util.string.CharArrayCharSequence;
+import org.denis.webview.util.io.CharBufferReader;
+import org.denis.webview.util.io.SymbolCountingReader;
+import org.denis.webview.util.io.UrlDecodingReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -24,8 +23,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.CharBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Adapter of application-specific syntax highlighting logic to <code>Velocity</code> API.
@@ -38,23 +35,6 @@ import java.util.Map;
 @Component
 @Scope(value = WebApplicationContext.SCOPE_REQUEST,  proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class SyntaxHighlightRenderable implements Renderable {
-
-    private static final Map<CharSequence, Class<?>> REQUEST_PARAMETER_NAMES = new HashMap<CharSequence, Class<?>>();
-    private static final Map<Class<?>, Map<String, Object>> ENUM_MEMBERS = new HashMap<Class<?>, Map<String, Object>>();
-    static {
-        register("profile", Profile.class, Profile.values());
-        register("language", SourceType.class, SourceType.values());
-    }
-
-    private static <T extends Enum<T>> void register(String requestParamName, Class<T> enumClass, T[] values) {
-        REQUEST_PARAMETER_NAMES.put(new CharArrayCharSequence(requestParamName), enumClass);
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        for (T value : values) {
-            map.put(value.toString(), value);
-        }
-        ENUM_MEMBERS.put(enumClass, map);
-    }
 
     private static final Logger LOG = Logger.getLogger(SyntaxHighlightRenderable.class);
     private static final String SOURCE_PARAMETER_NAME = "source";
@@ -74,18 +54,16 @@ public class SyntaxHighlightRenderable implements Renderable {
 
     /** Buffer used during highlighting parameters parsing. */
     private final CharBuffer paramsBuffer = CharBuffer.allocate(32);
-    private final Map<Class<?>, Object> params = getParamsHolder();
 
     private MarkupSchemeProvider markupSchemeProvider;
     private HighlighterProvider highlighterProvider;
     private Reader reader;
+    private Settings settings;
 
     @Override
     public boolean render(InternalContextAdapter context, Writer writer) throws IllegalArgumentException, IOException {
         // Setup output processor.
-        MarkupScheme markupScheme = markupSchemeProvider.getScheme(
-            (MarkupType) params.get(MarkupType.class), (Profile) params.get(Profile.class)
-        );
+        MarkupScheme markupScheme = markupSchemeProvider.getScheme();
         OutputProcessor outputProcessor = new OutputProcessor(writer, markupScheme);
 
         // Setup rolling input symbol stream.
@@ -94,7 +72,7 @@ public class SyntaxHighlightRenderable implements Renderable {
         readerListener.setReader(charBufferReader);
 
         // Parse tokens.
-        Highlighter highlighter = highlighterProvider.getHighlighter((SourceType) params.get(SourceType.class));
+        Highlighter highlighter = highlighterProvider.getHighlighter();
         highlighter.addListener(new HighlighterListener(outputProcessor));
         SymbolCountingReader symbolCountingReader = new SymbolCountingReader(charBufferReader);
         symbolCountingReader.adjustReadSymbolsNumber(activeData.size());
@@ -103,10 +81,10 @@ public class SyntaxHighlightRenderable implements Renderable {
         return true;
     }
 
-    public void prepare(Reader reader, Map<String, Object> paramsHolder) throws IOException {
+    public void prepare(Reader reader) throws IOException {
 //        this.reader = new HtmlEntityDecodingReader(new UrlDecodingReader(new HttpParametersReader(
         this.reader = new UrlDecodingReader(reader);
-        parseParams(paramsHolder);
+        parseParams();
     }
     
     @Autowired
@@ -119,18 +97,19 @@ public class SyntaxHighlightRenderable implements Renderable {
         this.highlighterProvider = highlighterProvider;
     }
 
+    @Autowired
+    public void setSettings(Settings settings) {
+        this.settings = settings;
+    }
+
     private enum Target { KEY, VALUE }
     @SuppressWarnings({"unchecked", "EqualsBetweenInconvertibleTypes"})
-    private Map<Class<?>, Object> parseParams(Map<String, Object> paramsHolder)
-            throws IOException, IllegalArgumentException
-    {
+    private void parseParams() throws IOException, IllegalArgumentException {
         CharBuffer readerBuffer = activeData.buffer;
         readerBuffer.clear();
         paramsBuffer.clear();
         Target target = Target.KEY;
-        Class<?> currentKey = null;
-        String currentParamName = null;
-        CharArrayCharSequence mapKey = new CharArrayCharSequence();
+        String key = null;
         while (reader.read(readerBuffer) >= 0) {
             readerBuffer.flip();
             while (readerBuffer.hasRemaining()) {
@@ -138,17 +117,15 @@ public class SyntaxHighlightRenderable implements Renderable {
                 switch (target) {
                     case KEY:
                         if (c == '=') {
-                            mapKey.updateState(paramsBuffer.array(), 0, paramsBuffer.position());
-                            if (mapKey.equals(SOURCE_PARAMETER_NAME)) {
+                            key = new String(paramsBuffer.array(), 0, paramsBuffer.position());
+                            if (SOURCE_PARAMETER_NAME.equals(key)) {
                                 activeData.bufferStart = readerBuffer.position();
                                 activeData.bufferEnd = readerBuffer.limit();
                                 activeData.bufferShift = activeData.bufferStart;
                                 activeData.clientShift = 0;
                                 activeData.readSymbols = readerBuffer.remaining();
-                                return params;
+                                return;
                             }
-                            currentKey = REQUEST_PARAMETER_NAMES.get(mapKey);
-                            currentParamName = mapKey.toString().intern();
                             target = Target.VALUE;
                             paramsBuffer.clear();
                         } else {
@@ -160,15 +137,9 @@ public class SyntaxHighlightRenderable implements Renderable {
                             paramsBuffer.put(c);
                             break;
                         }
-                        if (currentKey != null) {
-                            String valueAsString
-                                    = new String(paramsBuffer.array(), 0, paramsBuffer.position()).intern();
-                            Map<String, Object> map = ENUM_MEMBERS.get(currentKey);
-                            Object value = map.get(valueAsString.toUpperCase());
-                            if (value != null) {
-                                params.put(currentKey, value);
-                            }
-                            paramsHolder.put(currentParamName, valueAsString);
+                        if (key != null) {
+                            String value = new String(paramsBuffer.array(), 0, paramsBuffer.position());
+                            settings.setSetting(key, value);
                         }
                         paramsBuffer.clear();
                         target = Target.KEY;
@@ -177,15 +148,6 @@ public class SyntaxHighlightRenderable implements Renderable {
             }
             readerBuffer.clear();
         }
-        return params;
-    }
-
-    private static Map<Class<?>, Object> getParamsHolder() {
-        Map<Class<?>, Object> result = new HashMap<Class<?>, Object>();
-        result.put(Profile.class, Profile.IDEA);
-        result.put(SourceType.class, SourceType.JAVA);
-        result.put(MarkupType.class, MarkupType.INLINE);
-        return result;
     }
 
     private class CharBufferListener implements CharBufferReader.Listener {
