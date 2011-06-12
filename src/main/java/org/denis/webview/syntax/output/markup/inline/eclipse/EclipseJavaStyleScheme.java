@@ -30,15 +30,12 @@ public class EclipseJavaStyleScheme extends StyleSchemeImpl {
         register(JavaTokenType.JAVADOC_START, new StyleRule(StyleAttribute.COLOR, "#3f5fbf"));
         register(JavaTokenType.JAVADOC_HTML_TAG_START, new StyleRule(StyleAttribute.COLOR, "#837f9f"));
         register(JavaTokenType.JAVADOC_TAG_START, new StyleRule(StyleAttribute.COLOR, "#7f9fc5"));
-
-        register(JavaTokenType.JAVADOC_TAG_START, StyleRule.UNDERLINE, StyleRule.BOLD);
-        register(JavaTokenType.JAVADOC_HTML_TAG_START, new StyleRule(StyleAttribute.BACKGROUND_COLOR, "#e2ffe2"));
     }
 
     private void registerLiterals() {
         final StyleRule rule = new StyleRule(StyleAttribute.COLOR, "#3f7f5f");
-        register(JavaTokenType.SINGLE_LINE_COMMENT_START, rule);
-        register(JavaTokenType.MULTI_LINE_COMMENT_START, rule);
+        register(JavaTokenType.STRING_LITERAL_START, rule);
+        register(JavaTokenType.CHAR_LITERAL, rule);
     }
 
     private void registerOthers() {
