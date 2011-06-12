@@ -54,7 +54,7 @@ public class Settings {
     private static final String CURRENT_SETTINGS_PARAM_NAME = "current";
     private static final String ALL_SETTINGS_PARAM_NAME     = "all";
     
-    private final Map<String, Object> rendererSettings = new HashMap<String, Object>();
+    private final Map<String, Map<String, Object>> rendererSettings = new HashMap<String, Map<String, Object>>();
 
     private Profile    profile;
     private SourceType sourceType;
@@ -76,6 +76,7 @@ public class Settings {
      * @param key      target key
      * @param value    target value
      */
+    @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection"})
     public void setSetting(String key, String value) {
         final Processor<?> processor = PROCESSORS_BY_PARAM_NAME.get(key);
         if (processor != null) {
@@ -86,7 +87,7 @@ public class Settings {
     /**
      * @return      settings to deliver to the rendering context for the actual rendering
      */
-    public Map<String, Object> getRendererSettings() {
+    public Map<String, Map<String, Object>> getRendererSettings() {
         return rendererSettings;
     }
 
@@ -114,7 +115,20 @@ public class Settings {
         MARKUP_TYPE_PROCESSOR.update(markupType, this);
     }
 
-    //TODO den add doc
+    @SuppressWarnings({"unchecked", "RedundantCast"})
+    private static <T> Map<String, T> getRendererSettings(Map<String, Map<String, Object>> map, String type) {
+        Map<String, Object> result = map.get(type);
+        if (result == null) {
+            map.put(type, result = new HashMap<String, Object>());
+        }
+        return (Map<String, T>)result;
+    }
+
+    /**
+     * Base class for the settings property processors.
+     *
+     * @param <T>   target property type
+     */
     private static abstract class Processor<T> {
 
         private final Map<T, String> VALUE_TO_STRING   = new HashMap<T, String>();
@@ -133,24 +147,23 @@ public class Settings {
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "MismatchedQueryAndUpdateOfCollection"})
         public void init(Settings settings) {
-            Map<String, List<String>> map 
-                    = (Map<String, List<String>>) settings.rendererSettings.get(ALL_SETTINGS_PARAM_NAME);
-            if (map == null) {
-                settings.rendererSettings.put(ALL_SETTINGS_PARAM_NAME, map = new HashMap<String, List<String>>());
-            }
+            Map<String, List<String>> map = getRendererSettings(settings.rendererSettings, ALL_SETTINGS_PARAM_NAME);
             map.put(paramName, ALL_STRING_VALUES);
         }
         
+        @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection"})
         public void update(String value, Settings settings) {
             final T t = STRING_TO_VALUE.get(value);
             if (t != null) {
                 doUpdate(t, settings);
-            } 
+                Map<String, Object> current = getRendererSettings(settings.rendererSettings, CURRENT_SETTINGS_PARAM_NAME);
+                current.put(paramName, value);
+            }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "MismatchedQueryAndUpdateOfCollection"})
         public void update(T value, Settings settings) {
             doUpdate(value, settings);
             
@@ -158,10 +171,7 @@ public class Settings {
             if (s == null) {
                 return;
             }
-            Map<String, String> map = (Map<String, String>) settings.rendererSettings.get(CURRENT_SETTINGS_PARAM_NAME);
-            if (map == null) {
-                settings.rendererSettings.put(CURRENT_SETTINGS_PARAM_NAME, map = new HashMap<String, String>());
-            } 
+            Map<String, String> map = getRendererSettings(settings.rendererSettings, CURRENT_SETTINGS_PARAM_NAME);
             map.put(paramName, s);
         }
 
