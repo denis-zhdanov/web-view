@@ -41,5 +41,6 @@ public class IdeaJavaStyleScheme extends StyleSchemeImpl {
 
     private void registerOthers() {
         register(JavaTokenType.KEYWORD, new StyleRule(StyleAttribute.COLOR, "#000080"), StyleRule.BOLD);
+        register(JavaTokenType.ANNOTATION_START, new StyleRule(StyleAttribute.COLOR, "#808000"));
     }
 }

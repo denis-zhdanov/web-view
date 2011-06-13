@@ -74,9 +74,9 @@ public class HighlighterTest {
         }
         
         for (File file : testDataDir.listFiles()) {
-//            String interestedName = "keywords.txt";
+//            String interestedName = "annotation";
             String interestedName = null;
-            if (interestedName != null && !interestedName.equals(file.getName())) {
+            if (interestedName != null && !file.getName().contains(interestedName)) {
                 continue;
             }
             final String message = String.format("'%s'", file.getName());
@@ -91,11 +91,24 @@ public class HighlighterTest {
             
             prepare(buffer.toString());
             final List<TokenInfo> expected = getTokenInfos();
+            final Map<TokenType, Integer> counters = new HashMap<TokenType, Integer>();
+            for (TokenInfo tokenInfo : expected) {
+                Integer count = counters.get(tokenInfo.getTokenType());
+                if (count == null) {
+                    counters.put(tokenInfo.getTokenType(), 1);
+                } else {
+                    counters.put(tokenInfo.getTokenType(), count + 1);
+                }
+            }
             Highlighter.Listener listener = new Highlighter.Listener() {
                 @Override
                 public void onToken(TokenInfo info) {
-                    if (info.getTokenType() == null) {
+                    if (info.getTokenType() == null || !counters.containsKey(info.getTokenType())) {
                         return;
+                    }
+                    int count = counters.remove(info.getTokenType()) - 1;
+                    if (count > 0) {
+                        counters.put(info.getTokenType(), count);
                     }
                     assertFalse(
                             String.format("%s unexpected token: %s (%s)",
@@ -117,7 +130,7 @@ public class HighlighterTest {
             } finally {
                 assertTrue(message, highlighter.removeListener(listener));
             }
-            assertTrue(message, expected.isEmpty());
+            assertTrue(String.format("%s - remaining: %s", message, expected), expected.isEmpty());
         }
     }
     

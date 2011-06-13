@@ -16,7 +16,7 @@ public enum JavaTokenType implements TokenType {
     // Strings.
     STRING_LITERAL_START, CHAR_LITERAL(Category.COMPLETE),
     
-    KEYWORD(Category.COMPLETE);
+    KEYWORD(Category.COMPLETE), ANNOTATION_START;
 
     public static final JavaTokenType[] COMMENTS = {
             SINGLE_LINE_COMMENT_START, MULTI_LINE_COMMENT_START, JAVADOC_START

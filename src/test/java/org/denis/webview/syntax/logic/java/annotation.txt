@@ -1,0 +1,4 @@
+<%ANNOTATION_START>@<%>WithArgs<%END_LOOK_AHEAD>(<%>param = "test")
+<%ANNOTATION_START>@<%>WithoutArgs<%END_LOOK_AHEAD>
+<%>class Test {
+}

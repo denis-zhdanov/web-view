@@ -42,7 +42,7 @@ KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"
 /* comments */
 %state END_LINE_COMMENT MULTI_LINE_COMMENT DOC_TAG_AWARE_COMMENT DOC_TAG_UNAWARE_COMMENT DOC_TAG DOC_HTML_TAG
 
-%state STRING
+%state STRING ANNOTATION
 
 %%
 
@@ -57,6 +57,7 @@ KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"
                                 return KEYWORD;
                             }
                           }
+    @/[:jletter:]         { yybegin(ANNOTATION); return ANNOTATION_START; }
     {AnySymbol}           { }
 }                                     
                                       
@@ -102,4 +103,9 @@ KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"
 <STRING> {                
     \"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
     {AnySymbol}           { }
+}
+
+<ANNOTATION> {
+    [:jletterdigit:]      {}
+    {AnySymbol}           { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
 }

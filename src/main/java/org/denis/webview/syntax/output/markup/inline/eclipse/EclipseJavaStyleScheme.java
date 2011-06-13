@@ -40,5 +40,6 @@ public class EclipseJavaStyleScheme extends StyleSchemeImpl {
 
     private void registerOthers() {
         register(JavaTokenType.KEYWORD, new StyleRule(StyleAttribute.COLOR, "#7f0058"), StyleRule.BOLD);
+        register(JavaTokenType.ANNOTATION_START, new StyleRule(StyleAttribute.COLOR, "#646464"));
     }
 }
