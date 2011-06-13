@@ -1,0 +1,18 @@
+//TODOno-match<%END_LOOK_AHEAD>
+<%>// <%TODO_COMMENT_START>TODO<%> upper case<%END_LOOK_AHEAD>
+<%>//<%TODO_COMMENT_START>todo<%> lower case<%END_LOOK_AHEAD>
+<%>//<%TODO_COMMENT_START>TodO<%> mixed case<%END_LOOK_AHEAD>
+<%>// <%TODO_COMMENT_START>TODO<%>: with colon<%END_LOOK_AHEAD>
+<%>//<%TODO_COMMENT_START>TODO<%>-with dash<%END_LOOK_AHEAD>
+<%>
+
+/* <%TODO_COMMENT_START>TODO<%> single line */<%END_LOOK_AHEAD>
+<%>/* test string <%TODO_COMMENT_START>TODO<%> single line */<%END_LOOK_AHEAD>
+<%>/*
+ * <%TODO_COMMENT_START>TODO<%> multi line<%END_LOOK_AHEAD>
+<%> */
+
+ /** <%TODO_COMMENT_START>TODO<%> single line */<%END_LOOK_AHEAD>
+<%> /**
+  * <%TODO_COMMENT_START>TODO<%> multi line<%END_LOOK_AHEAD>
+<%>  */

@@ -130,7 +130,10 @@ public class HighlighterTest {
             } finally {
                 assertTrue(message, highlighter.removeListener(listener));
             }
-            assertTrue(String.format("%s - remaining: %s", message, expected), expected.isEmpty());
+            assertTrue(
+                String.format("%s - remaining %d items: %s", message, expected.size(), expected),
+                expected.isEmpty()
+            );
         }
     }
     

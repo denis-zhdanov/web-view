@@ -30,6 +30,7 @@ public class IdeaJavaStyleScheme extends StyleSchemeImpl {
         
         register(JavaTokenType.JAVADOC_TAG_START, StyleRule.UNDERLINE, StyleRule.BOLD);
         register(JavaTokenType.JAVADOC_HTML_TAG_START, new StyleRule(StyleAttribute.BACKGROUND_COLOR, "#e2ffe2"));
+        register(JavaTokenType.TODO_COMMENT_START, new StyleRule(StyleAttribute.COLOR, "#0000ff"), StyleRule.BOLD);
     }
 
     private void registerLiterals() {

@@ -35,6 +35,7 @@ private boolean isValidSymbolBeforeKeyword() {
 
 LF        = \r|\n|\r\n
 WS        = " "|\t
+TODO      = [Tt][Oo][Dd][Oo]
 AnySymbol = .|{LF}
 
 KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"package"|"synchronized"|"boolean"|"do"|"if"|"private"|"this"|"break"|"double"|"implements"|"protected"|"throw"|"byte"|"else"|"import"|"public"|"throws"|"case"|"enum"|"instanceof"|"return"|"transient"|"catch"|"extends"|"int"|"short"|"try"|"char"|"final"|"interface"|"static"|"void"|"class"|"finally"|"long"|"strictfp"|"volatile"|"const"|"float"|"native"|"super"|"while"|"null"
@@ -42,70 +43,92 @@ KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"
 /* comments */
 %state END_LINE_COMMENT MULTI_LINE_COMMENT DOC_TAG_AWARE_COMMENT DOC_TAG_UNAWARE_COMMENT DOC_TAG DOC_HTML_TAG
 
+/* TODO */
+%state TODO_END_OF_LINE_COMMENT TODO_MULTI_LINE_COMMENT TODO_JAVADOC
+
 %state STRING ANNOTATION
 
 %%
 
 <YYINITIAL> {
-    "//"                  { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START; }
-    "/**"                 { yybegin(DOC_TAG_UNAWARE_COMMENT); return JAVADOC_START; }
-    "/*"                  { yybegin(MULTI_LINE_COMMENT); return MULTI_LINE_COMMENT_START; }
-    \"                    { yybegin(STRING); return STRING_LITERAL_START; }
-    '.'                   { return CHAR_LITERAL; }
-    {KEYWORD}/{WS}|{LF}|[(;).\[]   { 
-                            if (isValidSymbolBeforeKeyword()) {
-                                return KEYWORD;
-                            }
-                          }
-    @/[:jletter:]         { yybegin(ANNOTATION); return ANNOTATION_START; }
-    {AnySymbol}           { }
+    "//"                          { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START; }
+    "/**"                         { yybegin(DOC_TAG_UNAWARE_COMMENT); return JAVADOC_START; }
+    "/*"                          { yybegin(MULTI_LINE_COMMENT); return MULTI_LINE_COMMENT_START; }
+    \"                            { yybegin(STRING); return STRING_LITERAL_START; }
+    '.'                           { return CHAR_LITERAL; }
+    {KEYWORD}/{WS}|{LF}|[(;).\[]  {
+                                      if (isValidSymbolBeforeKeyword()) {
+                                          return KEYWORD;
+                                      }
+                                  }
+    @/[:jletter:]                 { yybegin(ANNOTATION); return ANNOTATION_START; }
+    {AnySymbol}                   { }
 }                                     
                                       
 <END_LINE_COMMENT> {                  
-    {LF}                  { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
-    .                     { }
+    {LF}                          { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_END_OF_LINE_COMMENT); return TODO_COMMENT_START;}
+    .                             { }
 }                         
-                          
+
+<TODO_END_OF_LINE_COMMENT> {
+    {LF}                          { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    .                             { }
+}
+
 <MULTI_LINE_COMMENT> {    
-    "*/"                  { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {AnySymbol}           { }
+    "*/"                          { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_MULTI_LINE_COMMENT); return TODO_COMMENT_START;}
+    {AnySymbol}                   { }
 }                         
-                          
+
+<TODO_MULTI_LINE_COMMENT> {
+    {LF}                          { yybegin(MULTI_LINE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    .                             { }
+}
+
 <DOC_TAG_AWARE_COMMENT>   {
-    "<"\/?/[:jletter:]    { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
-    {LF}                  { yybegin(DOC_TAG_AWARE_COMMENT); }
-    [^ *@{]               { yybegin(DOC_TAG_UNAWARE_COMMENT); }
-    "@"/[:jletterdigit:]  { yybegin(DOC_TAG); return JAVADOC_TAG_START; }
-    "*/"                  { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {AnySymbol}           { }
+    "<"\/?/[:jletter:]            { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
+    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); }
+    [^ *@{]                       { yybegin(DOC_TAG_UNAWARE_COMMENT); }
+    "@"/[:jletterdigit:]          { yybegin(DOC_TAG); return JAVADOC_TAG_START; }
+    "*/"                          { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_JAVADOC); return TODO_COMMENT_START;}
+    {AnySymbol}                   { }
 }
 
 <DOC_TAG_UNAWARE_COMMENT> {
-    "<"\/?/[:jletter:]    { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
-    "{"|{LF}              { yybegin(DOC_TAG_AWARE_COMMENT); }
-    "*/"                  { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {AnySymbol}           { }
+    "<"\/?/[:jletter:]            { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
+    "{"|{LF}                      { yybegin(DOC_TAG_AWARE_COMMENT); }
+    "*/"                          { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_JAVADOC); return TODO_COMMENT_START;}
+    {AnySymbol}                   { }
 }                                     
                                       
 <DOC_TAG> {                           
-    {LF}                  { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
-    [:jletterdigit:]      { }
-    {AnySymbol}           { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    [:jletterdigit:]              { }
+    {AnySymbol}                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
 }                                     
                                       
 <DOC_HTML_TAG> {                      
-    {LF}                  { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
-    [:jletterdigit:]      { }
-    "/>"                  { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
-    {AnySymbol}           { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
+    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    [:jletterdigit:]              { }
+    "/>"                          { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
+    {AnySymbol}                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
 }                                     
-                                      
+
+<TODO_JAVADOC> {
+    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    .                             { }
+}
+
 <STRING> {                
-    \"                    { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {AnySymbol}           { }
+    \"                            { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    {AnySymbol}                   { }
 }
 
 <ANNOTATION> {
-    [:jletterdigit:]      {}
-    {AnySymbol}           { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    [:jletterdigit:]              {}
+    {AnySymbol}                   { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
 }
