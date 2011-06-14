@@ -42,10 +42,19 @@ div.horizontal-option-wrapper img {
     height: 3em;
 }
 
-#source-options input[type=image] {
-    margin-top: 3em;
+#source-options input[type=image], #copy-html-button {
     width: 7em;
     height: 3em;
+    display: block;
+    padding: 1px;
+}
+
+#generate-button {
+    margin-top: 7em;
+}
+
+#copy-html-button {
+    margin-top: 1em;
 }
 
 .horizontal-option-current, .all-options-wrapper {

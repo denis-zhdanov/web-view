@@ -4,11 +4,15 @@
     <head>
         <link rel="stylesheet" type="text/css" href="/css/common.css"/>
         <link rel="stylesheet" type="text/css" href="/css/syntax.css"/>
-        <script type="text/javascript" src="/js/subsequent-highlight.js"></script>
+        <script type="text/javascript" src="/js/init.js"></script>
+        <script type="text/javascript" src="/js/highlight.js"></script>
         <script type="text/javascript" src="/js/horizontal-option.js"></script>
-        <title></title>
+
+##        third-party scripts
+        <script type="text/javascript" src="/js/external/ZeroClipboard.js"></script>
+        <title>Web view your source</title>
     </head>
-    <body onload="prepareSubsequentHighlight()">
+    <body onload="init()">
         <div id="menu">
             <ul>
                 #set($tabs = {"go": "Go!", "doc": "Documentation", "feedback": "Feedback", "about": "About"})

@@ -1,0 +1,4 @@
+function init() {
+    prepareClipboardProcessing();
+    prepareSubsequentHighlight();
+}

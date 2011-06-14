@@ -1,9 +1,7 @@
 #set($targetSourcePrefix = '
     <div id="content-border-box">
-        <pre id="highlighted-source">
-')
-#set($targetSourceSuffix = '
-        </pre>
+        <pre id="highlighted-source">')
+#set($targetSourceSuffix = '</pre>
         <input type="hidden" id="raw-source" name="source" value="internal error"/>
     </div>
 ')

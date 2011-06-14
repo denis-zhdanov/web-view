@@ -17,12 +17,14 @@
                 </div>
             </div>
         #end
-        <input type="image" src="/pic/generate.png" alt="Generate">
+        <input type="image" src="/pic/generate.png" id="generate-button" alt="Generate">
+#if($highlighted)
+        <input type="image" src="/pic/copy-html.png" id="copy-html-button" alt="Copy">
+#end
+
     </div>
     <div id="target-source-wrapper">
-$targetSourcePrefix
-#if ($highlighted)$highlighted#end
-$targetSourceSuffix
+$targetSourcePrefix#if ($highlighted)$highlighted#end$targetSourceSuffix
     </div>
 </form>
 
