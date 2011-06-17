@@ -70,20 +70,10 @@ public class HighlighterProvider {
 
         @SuppressWarnings({"StatementWithEmptyBody"})
         @Override
-        public TokenType advance() throws IOException {
+        public List<TokenInfo> advance() throws IOException {
             char[] buffer = new char[256];
             while (reader.read(buffer) >= 0) ;
             return null;
-        }
-
-        @Override
-        public int getStartOffset() {
-            return 0;
-        }
-
-        @Override
-        public int getEndOffset() {
-            return 0;
         }
     }
     
@@ -111,17 +101,20 @@ public class HighlighterProvider {
             }
             int numberOfEndTokensToProvide = 0;
             int lastTokenEndOffset = 0;
-            for (TokenType tokenType = lexer.advance(); tokenType != null; tokenType = lexer.advance()) {
-                TokenInfo tokenInfo = new TokenInfo(tokenType, lexer.getStartOffset(), lexer.getEndOffset());
-                lastTokenEndOffset = lexer.getEndOffset();
-                for (Listener listener : listeners) {
-                    listener.onToken(tokenInfo);
-                }
-                switch (tokenType.getCategory()) {
-                    case END:
-                    case END_LOOK_AHEAD: --numberOfEndTokensToProvide; break;
-                    case START: ++numberOfEndTokensToProvide; break;
-                    case COMPLETE:
+            for (List<TokenInfo> tokenInfos = lexer.advance(); tokenInfos != null; tokenInfos = lexer.advance()) {
+                for (TokenInfo tokenInfo : tokenInfos) {
+                    lastTokenEndOffset = tokenInfo.getEndOffset();
+                    for (Listener listener : listeners) {
+                        listener.onToken(tokenInfo);
+                    }
+                    switch (tokenInfo.getTokenType().getCategory()) {
+                        case END:
+                        case END_LOOK_AHEAD: --numberOfEndTokensToProvide; break;
+                        case START:
+                            ++numberOfEndTokensToProvide;
+                            break;
+                        case COMPLETE:
+                    }
                 }
             }
 

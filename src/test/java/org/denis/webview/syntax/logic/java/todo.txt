@@ -1,5 +1,5 @@
-//TODOno-match<%END_LOOK_AHEAD>
-<%>// <%TODO_COMMENT_START>TODO<%> upper case<%END_LOOK_AHEAD>
+//TODOno-match
+// <%TODO_COMMENT_START>TODO<%> upper case<%END_LOOK_AHEAD>
 <%>//<%TODO_COMMENT_START>todo<%> lower case<%END_LOOK_AHEAD>
 <%>//<%TODO_COMMENT_START>TodO<%> mixed case<%END_LOOK_AHEAD>
 <%>// <%TODO_COMMENT_START>TODO<%>: with colon<%END_LOOK_AHEAD>
@@ -16,3 +16,6 @@
 <%> /**
   * <%TODO_COMMENT_START>TODO<%> multi line<%END_LOOK_AHEAD>
 <%>  */
+
+<%SINGLE_LINE_COMMENT_START>//<%> <%END%><%TODO_COMMENT_START>TODO<%> the text below is intended to be not comment<%END_LOOK_AHEAD>
+<%>just a simple text

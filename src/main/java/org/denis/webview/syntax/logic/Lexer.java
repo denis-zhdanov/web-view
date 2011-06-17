@@ -1,5 +1,7 @@
 package org.denis.webview.syntax.logic;
 
+import java.util.List;
+
 /**
  * Defines general contract for jflex-generated lexers.
  * 
@@ -8,9 +10,5 @@ package org.denis.webview.syntax.logic;
  */
 public interface Lexer {
 
-    TokenType advance() throws java.io.IOException;
-    
-    int getStartOffset();
-    
-    int getEndOffset();
+    List<TokenInfo> advance() throws java.io.IOException;
 }

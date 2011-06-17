@@ -8,9 +8,11 @@ import org.denis.webview.util.io.SymbolCountingReader;
 import org.junit.Test;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -74,7 +76,7 @@ public class HighlighterTest {
         }
         
         for (File file : testDataDir.listFiles()) {
-//            String interestedName = "annotation";
+//            String interestedName = "todo";
             String interestedName = null;
             if (interestedName != null && !file.getName().contains(interestedName)) {
                 continue;
@@ -91,37 +93,12 @@ public class HighlighterTest {
             
             prepare(buffer.toString());
             final List<TokenInfo> expected = getTokenInfos();
-            final Map<TokenType, Integer> counters = new HashMap<TokenType, Integer>();
-            for (TokenInfo tokenInfo : expected) {
-                Integer count = counters.get(tokenInfo.getTokenType());
-                if (count == null) {
-                    counters.put(tokenInfo.getTokenType(), 1);
-                } else {
-                    counters.put(tokenInfo.getTokenType(), count + 1);
-                }
-            }
             Highlighter.Listener listener = new Highlighter.Listener() {
                 @Override
                 public void onToken(TokenInfo info) {
-                    if (info.getTokenType() == null || !counters.containsKey(info.getTokenType())) {
-                        return;
+                    if (!expected.isEmpty() && expected.get(0).equals(info)) {
+                        expected.remove(0);
                     }
-                    int count = counters.remove(info.getTokenType()) - 1;
-                    if (count > 0) {
-                        counters.put(info.getTokenType(), count);
-                    }
-                    assertFalse(
-                            String.format("%s unexpected token: %s (%s)",
-                                    message, info, getRawText().substring(info.getStartOffset(), info.getEndOffset())),
-                            expected.isEmpty()
-                    );
-                    final TokenInfo expectedInfo = expected.remove(0);
-                    final String currentMessage = String.format("%s: expected '%s' but was '%s'",
-                            message,
-                            getRawText().substring(expectedInfo.getStartOffset(), expectedInfo.getEndOffset()),
-                            getRawText().substring(info.getStartOffset(), info.getEndOffset())
-                    );
-                    assertEquals(currentMessage, expectedInfo, info);
                 }
             };
             assertTrue(message, highlighter.addListener(listener));

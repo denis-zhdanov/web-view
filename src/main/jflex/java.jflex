@@ -1,6 +1,8 @@
 package org.denis.webview.syntax.logic.java;
+import static org.denis.webview.syntax.logic.TokenType.*;
 import static org.denis.webview.syntax.logic.java.JavaTokenType.*;
 import org.denis.webview.syntax.logic.*;
+import java.util.*;
 
 %%
 
@@ -10,15 +12,14 @@ import org.denis.webview.syntax.logic.*;
 %public
 %char
 %function advance
-%type TokenType
+%type List<TokenInfo>
 
 %{
-@Override
+
 public int getStartOffset() {
     return yychar;
 }
 
-@Override
 public int getEndOffset() {
     return yychar + zzMarkedPos - zzStartRead;
 }
@@ -29,6 +30,21 @@ private boolean isValidSymbolBeforeKeyword() {
     }
     char c = zzBuffer[zzStartRead - 1];
     return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '(';
+}
+
+private final List<TokenInfo> tokenInfos = new ArrayList<TokenInfo>();
+
+private List<TokenInfo> info(TokenType tokenType) {
+    tokenInfos.clear();
+    tokenInfos.add(new TokenInfo(tokenType, getStartOffset(), getEndOffset()));
+    return tokenInfos;
+}
+
+private List<TokenInfo> infos(TokenType endTokenType, TokenType tokenType) {
+    tokenInfos.clear();
+    tokenInfos.add(new TokenInfo(endTokenType, getStartOffset(), getStartOffset()));
+    tokenInfos.add(new TokenInfo(tokenType, getStartOffset(), getEndOffset()));
+    return tokenInfos;
 }
 
 %}
@@ -51,84 +67,84 @@ KEYWORD = "abstract"|"continue"|"for"|"new"|"switch"|"assert"|"default"|"goto"|"
 %%
 
 <YYINITIAL> {
-    "//"                          { yybegin(END_LINE_COMMENT); return SINGLE_LINE_COMMENT_START; }
-    "/**"                         { yybegin(DOC_TAG_UNAWARE_COMMENT); return JAVADOC_START; }
-    "/*"                          { yybegin(MULTI_LINE_COMMENT); return MULTI_LINE_COMMENT_START; }
-    \"                            { yybegin(STRING); return STRING_LITERAL_START; }
-    '.'                           { return CHAR_LITERAL; }
+    "//"                          { yybegin(END_LINE_COMMENT); return info(SINGLE_LINE_COMMENT_START); }
+    "/**"                         { yybegin(DOC_TAG_UNAWARE_COMMENT); return info(JAVADOC_START); }
+    "/*"                          { yybegin(MULTI_LINE_COMMENT); return info(MULTI_LINE_COMMENT_START); }
+    \"                            { yybegin(STRING); return info(STRING_LITERAL_START); }
+    '.'                           { return info(CHAR_LITERAL); }
     {KEYWORD}/{WS}|{LF}|[(;).\[]  {
                                       if (isValidSymbolBeforeKeyword()) {
-                                          return KEYWORD;
+                                          return info(KEYWORD);
                                       }
                                   }
-    @/[:jletter:]                 { yybegin(ANNOTATION); return ANNOTATION_START; }
+    @/[:jletter:]                 { yybegin(ANNOTATION); return info(ANNOTATION_START); }
     {AnySymbol}                   { }
 }                                     
                                       
 <END_LINE_COMMENT> {                  
-    {LF}                          { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
-    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_END_OF_LINE_COMMENT); return TODO_COMMENT_START;}
+    {LF}                          { yybegin(YYINITIAL); return info(END_LOOK_AHEAD_TOKEN); }
+    {TODO}/[^[:jletterdigit:]]    { yybegin(TODO_END_OF_LINE_COMMENT); return infos(END_TOKEN, TODO_COMMENT_START);}
     .                             { }
 }                         
 
 <TODO_END_OF_LINE_COMMENT> {
-    {LF}                          { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {LF}                          { yybegin(YYINITIAL); return info(END_LOOK_AHEAD_TOKEN); }
     .                             { }
 }
 
 <MULTI_LINE_COMMENT> {    
-    "*/"                          { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_MULTI_LINE_COMMENT); return TODO_COMMENT_START;}
+    "*/"                          { yybegin(YYINITIAL); return info(END_TOKEN); }
+    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_MULTI_LINE_COMMENT); return info(TODO_COMMENT_START);}
     {AnySymbol}                   { }
 }                         
 
 <TODO_MULTI_LINE_COMMENT> {
-    {LF}                          { yybegin(MULTI_LINE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {LF}                          { yybegin(MULTI_LINE_COMMENT); return info(END_LOOK_AHEAD_TOKEN); }
     .                             { }
 }
 
 <DOC_TAG_AWARE_COMMENT>   {
-    "<"\/?/[:jletter:]            { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
+    "<"\/?/[:jletter:]            { yybegin(DOC_HTML_TAG); return info(JAVADOC_HTML_TAG_START); }
     {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); }
     [^ *@{]                       { yybegin(DOC_TAG_UNAWARE_COMMENT); }
-    "@"/[:jletterdigit:]          { yybegin(DOC_TAG); return JAVADOC_TAG_START; }
-    "*/"                          { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_JAVADOC); return TODO_COMMENT_START;}
+    "@"/[:jletterdigit:]          { yybegin(DOC_TAG); return info(JAVADOC_TAG_START); }
+    "*/"                          { yybegin(YYINITIAL); return info(END_TOKEN); }
+    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_JAVADOC); return info(TODO_COMMENT_START);}
     {AnySymbol}                   { }
 }
 
 <DOC_TAG_UNAWARE_COMMENT> {
-    "<"\/?/[:jletter:]            { yybegin(DOC_HTML_TAG); return JAVADOC_HTML_TAG_START; }
+    "<"\/?/[:jletter:]            { yybegin(DOC_HTML_TAG); return info(JAVADOC_HTML_TAG_START); }
     "{"|{LF}                      { yybegin(DOC_TAG_AWARE_COMMENT); }
-    "*/"                          { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
-    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_JAVADOC); return TODO_COMMENT_START;}
+    "*/"                          { yybegin(YYINITIAL); return info(END_TOKEN); }
+    {TODO}/[^[:jletterdigit:]]    {yybegin(TODO_JAVADOC); return info(TODO_COMMENT_START);}
     {AnySymbol}                   { }
 }                                     
                                       
 <DOC_TAG> {                           
-    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return info(END_LOOK_AHEAD_TOKEN); }
     [:jletterdigit:]              { }
-    {AnySymbol}                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {AnySymbol}                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return info(END_LOOK_AHEAD_TOKEN); }
 }                                     
                                       
 <DOC_HTML_TAG> {                      
-    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return info(END_LOOK_AHEAD_TOKEN); }
     [:jletterdigit:]              { }
-    "/>"                          { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
-    {AnySymbol}                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return TokenType.END_TOKEN; }
+    "/>"                          { yybegin(DOC_TAG_UNAWARE_COMMENT); return info(END_TOKEN); }
+    {AnySymbol}                   { yybegin(DOC_TAG_UNAWARE_COMMENT); return info(END_TOKEN); }
 }                                     
 
 <TODO_JAVADOC> {
-    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {LF}                          { yybegin(DOC_TAG_AWARE_COMMENT); return info(END_LOOK_AHEAD_TOKEN); }
     .                             { }
 }
 
 <STRING> {                
-    \"                            { yybegin(YYINITIAL); return TokenType.END_TOKEN; }
+    \"                            { yybegin(YYINITIAL); return info(END_TOKEN); }
     {AnySymbol}                   { }
 }
 
 <ANNOTATION> {
     [:jletterdigit:]              {}
-    {AnySymbol}                   { yybegin(YYINITIAL); return TokenType.END_LOOK_AHEAD_TOKEN; }
+    {AnySymbol}                   { yybegin(YYINITIAL); return info(END_LOOK_AHEAD_TOKEN); }
 }
