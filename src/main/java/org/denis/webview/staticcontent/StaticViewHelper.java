@@ -3,13 +3,11 @@ package org.denis.webview.staticcontent;
 import org.denis.webview.view.CommonViewHelper;
 import org.denis.webview.view.ViewType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
 import java.net.MalformedURLException;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -19,31 +17,23 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 public class StaticViewHelper {
 
+    /** Default tab to go. */
+    public static final String DEFAULT_VIEW_NAME = "go";
+
+    /** Content entry path pattern. */
+    private static final String CONTENT_PATH_PATTERN = "/WEB-INF/vm/content/%s.vm";
+
     private final AtomicReference<ServletContext> servletContext = new AtomicReference<ServletContext>();
-    private final AtomicReference<String> internalContentPattern = new AtomicReference<String>();
-    private final AtomicReference<String> defaultViewName = new AtomicReference<String>();
     private final AtomicReference<CommonViewHelper> commonHelper = new AtomicReference<CommonViewHelper>();
 
     public ModelAndView map(String viewName) throws MalformedURLException {
-        String internalContentPath = String.format(internalContentPattern.get(), viewName);
+        String internalContentPath = String.format(CONTENT_PATH_PATTERN, viewName);
         String viewToUse = viewName;
         if (servletContext.get().getResource(internalContentPath) == null) {
-            viewToUse = defaultViewName.get();
+            viewToUse = DEFAULT_VIEW_NAME;
         }
 
         return commonHelper.get().map(viewToUse, ViewType.STATIC);
-    }
-
-    //TODO den add doc
-    @Value("#{webContent.defaultViewName}")
-    public void setDefaultViewName(String name) {
-        defaultViewName.set(name);
-    }
-
-    //TODO den add doc
-    @Value("#{webContent.internalContentPattern}")
-    public void setInternalContentPattern(String pattern) {
-        internalContentPattern.set(pattern);
     }
 
     @Autowired

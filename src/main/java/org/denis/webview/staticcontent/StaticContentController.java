@@ -9,7 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.net.MalformedURLException;
 
 /**
- * //TODO den add doc
+ * Controller that manages 'static content', i.e. all application tabs at our case.
  *
  * @author Denis Zhdanov
  * @since Jun 5, 2010
@@ -22,6 +22,11 @@ public class StaticContentController {
     @Autowired
     public StaticContentController(StaticViewHelper viewHelper) {
         this.viewHelper = viewHelper;
+    }
+
+    @RequestMapping("/**/*")
+    public ModelAndView handle() throws MalformedURLException {
+        return viewHelper.map(StaticViewHelper.DEFAULT_VIEW_NAME);
     }
 
     @RequestMapping("/{view}.*")

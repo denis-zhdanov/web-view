@@ -34,14 +34,4 @@ function prepareClipboardProcessing() {
     clip = new ZeroClipboard.Client();
     clip.glue(COPY_BUTTON_ID);
     clip.setHandCursor(true);
-    var button = document.getElementById(COPY_BUTTON_ID);
-    button.onclick = function() {
-        //TODO den remove
-        alert("button is clicked")
-//        var source = document.getElementById(HIGHLIGHTED_SOURCE_ELEMENT_ID);
-//        if (source) {
-//            clip.setText(source.innerHTML);
-//        }
-        return false;
-    }
 }
